@@ -1,0 +1,116 @@
+# Build artifacts
+build/
+DerivedData/
+*.ipa
+*.app.dSYM.zip
+*.app
+*.hmap
+*.dSYM
+*.generated.swift
+*.o
+*.LinkFileList
+
+# Dependencies
+Pods/
+Carthage/Build/
+.swiftpm/
+vendor/bundle/
+node_modules/
+
+# Xcode
+## User settings
+xcuserdata/
+*.xcuserstate
+
+## Workspace
+*.xcworkspace
+!default.xcworkspace
+
+## Project file
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+*.xccheckout
+*.xcscmblueprint
+
+# System files
+.DS_Store
+*.swp
+*~.nib
+*.bak
+*.orig
+tmp/
+*.log
+
+# Sensitive files and credentials
+## Certificates and provisioning
+*.mobileprovision
+*.cer
+*.p12
+*.key
+*.pem
+*.der
+**/certificates/**
+**/private_keys/**
+
+## Configuration and API keys
+GoogleService-Info.plist
+*.env
+*.env.*
+secrets.xcconfig
+configuration.plist
+APIKeys.plist
+
+# IDE specific
+.idea/
+.vscode/
+
+# Test artifacts
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+fastlane/test_output
+test-reports/
+coverage/
+*.coverage
+*.xcresult/
+
+# Machine Learning
+*.mlmodel.zip
+*.mlmodelc/
+ml_models/local/
+
+# Health data and PHI safeguards
+**/test_data/**/*.health
+**/sample_records/**
+**/phi_data/**
+
+# Crash reports and diagnostics
+*.crash
+*.ips
+crash_logs/
+diagnostics/
+
+# Code coverage
+*.gcno
+*.gcda
+*.gcov
+
+# Swift Package Manager
+.build/
+Package.resolved
+
+# CocoaPods
+Pods/
+*.xcconfig
+!base.xcconfig
+
+# Temporary files
+*.tmp
+*.temp
+.bundle/
