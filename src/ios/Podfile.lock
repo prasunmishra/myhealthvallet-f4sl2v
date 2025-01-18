@@ -1,0 +1,54 @@
+PODS:
+  - Alamofire (5.8.0)
+  - Charts (4.1.0)
+  - CryptoSwift (1.8.0)
+  - KeychainAccess (4.2.2)
+  - Nimble (12.0.0)
+  - Quick (7.0.0)
+  - RxCocoa (6.5.0):
+    - RxRelay (= 6.5.0)
+    - RxSwift (= 6.5.0)
+  - RxRelay (6.5.0):
+    - RxSwift (= 6.5.0)
+  - RxSwift (6.5.0)
+  - SwiftyJSON (5.0.1)
+
+DEPENDENCIES:
+  - Alamofire (= 5.8.0)
+  - Charts (= 4.1.0)
+  - CryptoSwift (= 1.8.0)
+  - KeychainAccess (= 4.2.2)
+  - Nimble (= 12.0.0)
+  - Quick (= 7.0.0)
+  - RxCocoa (= 6.5.0)
+  - RxSwift (= 6.5.0)
+  - SwiftyJSON (= 5.0.1)
+
+SPEC REPOS:
+  trunk:
+    - Alamofire
+    - Charts
+    - CryptoSwift
+    - KeychainAccess
+    - Nimble
+    - Quick
+    - RxCocoa
+    - RxRelay
+    - RxSwift
+    - SwiftyJSON
+
+SPEC CHECKSUMS:
+  Alamofire: 0e92e751b3e9e66d7982db43919d01f313b8eb91
+  Charts: ce0768268078eee0336f122c3c4ca248e4e204c5
+  CryptoSwift: 52aaf3fce7337552863b1d952e408085f0e65030
+  KeychainAccess: c0c4f7f38f6fc7bbe58f5702e25f7bd2f65abf51
+  Nimble: 82c393f6b82a54ddd1742db42a2b1f591fd8e766
+  Quick: 6676ffb409bf04abf506c073d21c9fb74a6d9149
+  RxCocoa: 94f817b71c07517321eb4f9ad299112ca8af743b
+  RxRelay: 1de1523e604c72b6c68feadedd1af3b1b4d0ecbd
+  RxSwift: 5710a9e6b17f3c3d6e40d6e559b9fa1e813b2ef8
+  SwiftyJSON: 2f33a42c6fbc52764d96f13368585094bfd8aa5e
+
+PODFILE CHECKSUM: 8d34c6789f606c8f84f4d6f2451c6a8e3ecef982
+
+COCOAPODS: 1.14.3
