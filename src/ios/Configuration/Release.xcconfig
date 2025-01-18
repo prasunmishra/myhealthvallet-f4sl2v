@@ -1,0 +1,52 @@
+// Release Build Configuration for PHRSAT Health Bridge iOS Application
+// Version: 1.0
+// Purpose: Production-grade build settings optimized for App Store distribution
+// HIPAA Compliance: Enhanced security settings for production environment
+
+// Import shared build configuration
+#include "./Shared.xcconfig"
+
+// Build Information Format
+DEBUG_INFORMATION_FORMAT = dwarf-with-dsym // Enable dSYM generation for crash reporting
+
+// Optimization Settings
+SWIFT_COMPILATION_MODE = wholemodule // Enable whole module optimization
+SWIFT_OPTIMIZATION_LEVEL = -O // Maximum Swift optimization
+GCC_OPTIMIZATION_LEVEL = s // Size-optimized compilation
+LLVM_LTO = YES // Enable Link Time Optimization
+
+// Debug and Testing Settings
+ENABLE_TESTABILITY = NO // Disable testability for production
+ENABLE_NS_ASSERTIONS = NO // Disable assertions in production
+MTL_ENABLE_DEBUG_INFO = NO // Disable Metal debug info
+ENABLE_STRICT_OBJC_MSGSEND = YES // Enforce strict messaging
+
+// Code Generation Settings
+GCC_GENERATE_DEBUGGING_SYMBOLS = YES // Generate debug symbols for crash reporting
+STRIP_INSTALLED_PRODUCT = YES // Strip symbols from installed binary
+STRIP_SWIFT_SYMBOLS = YES // Strip Swift symbols
+DEAD_CODE_STRIPPING = YES // Enable dead code stripping
+COPY_PHASE_STRIP = YES // Enable copy phase stripping
+
+// Security and Distribution Settings
+CODE_SIGN_IDENTITY = iPhone Distribution // Distribution signing identity
+CODE_SIGN_STYLE = Manual // Manual code signing for distribution
+ENABLE_BITCODE = YES // Enable bitcode for App Store submission
+VALIDATE_PRODUCT = YES // Enable build validation
+
+// Compiler Settings
+GCC_PREPROCESSOR_DEFINITIONS = NDEBUG=1 RELEASE=1 // Define release macros
+SWIFT_ACTIVE_COMPILATION_CONDITIONS = RELEASE // Set Swift compilation condition
+ENABLE_TESTABILITY = NO // Disable testability features
+DEPLOYMENT_POSTPROCESSING = YES // Enable deployment postprocessing
+
+// Performance Settings
+SWIFT_DISABLE_SAFETY_CHECKS = YES // Disable safety checks for performance
+GCC_UNROLL_LOOPS = YES // Enable loop unrolling
+LLVM_OPTIMIZATION_LEVEL = Optimize for Size // Optimize LLVM for size
+
+// Additional Production Settings
+ENABLE_ON_DEMAND_RESOURCES = YES // Enable on-demand resources
+ASSETCATALOG_COMPILER_OPTIMIZATION = space // Optimize asset catalog for size
+COMPRESS_PNG_FILES = YES // Enable PNG compression
+STRIP_PNG_TEXT = YES // Strip PNG metadata
