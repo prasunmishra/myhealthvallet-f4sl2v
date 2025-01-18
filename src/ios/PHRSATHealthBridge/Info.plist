@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- Core App Identity -->
+    <key>CFBundleIdentifier</key>
+    <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+    <key>CFBundleName</key>
+    <string>$(PRODUCT_NAME)</string>
+    <key>CFBundleDisplayName</key>
+    <string>PHRSAT Health Bridge</string>
+    <key>CFBundleVersion</key>
+    <string>1.0.0</string>
+    <key>CFBundleShortVersionString</key>
+    <string>1.0</string>
+    
+    <!-- Device Requirements and Capabilities -->
+    <key>LSRequiresIPhoneOS</key>
+    <true/>
+    <key>UIRequiredDeviceCapabilities</key>
+    <array>
+        <string>armv7</string>
+        <string>healthkit</string>
+        <string>face-id</string>
+    </array>
+    
+    <!-- Background Processing Modes -->
+    <key>UIBackgroundModes</key>
+    <array>
+        <string>fetch</string>
+        <string>remote-notification</string>
+        <string>processing</string>
+        <string>health-kit</string>
+    </array>
+    
+    <!-- Privacy Permissions and Usage Descriptions -->
+    <key>NSHealthShareUsageDescription</key>
+    <string>PHRSAT Health Bridge requires access to your health data to provide HIPAA-compliant health analysis, insights, and secure data synchronization. Your health information is encrypted and protected according to healthcare privacy standards.</string>
+    <key>NSHealthUpdateUsageDescription</key>
+    <string>PHRSAT Health Bridge needs permission to securely update your health data for comprehensive health tracking and analysis. All data updates are encrypted and handled in compliance with HIPAA regulations.</string>
+    <key>NSFaceIDUsageDescription</key>
+    <string>PHRSAT Health Bridge uses Face ID to ensure secure, HIPAA-compliant access to your protected health information. This provides an additional layer of security for your sensitive medical data.</string>
+    <key>NSCameraUsageDescription</key>
+    <string>PHRSAT Health Bridge requires camera access to securely scan and upload health documents. All captured images are encrypted and processed following HIPAA security guidelines.</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>PHRSAT Health Bridge needs access to your photos to securely upload existing health documents. Selected images are handled with HIPAA-compliant encryption and security measures.</string>
+    
+    <!-- Interface Orientation Support -->
+    <key>UISupportedInterfaceOrientations</key>
+    <array>
+        <string>UIInterfaceOrientationPortrait</string>
+    </array>
+    <key>UISupportedInterfaceOrientations~ipad</key>
+    <array>
+        <string>UIInterfaceOrientationPortrait</string>
+        <string>UIInterfaceOrientationPortraitUpsideDown</string>
+        <string>UIInterfaceOrientationLandscapeLeft</string>
+        <string>UIInterfaceOrientationLandscapeRight</string>
+    </array>
+    
+    <!-- UI Configuration -->
+    <key>UILaunchStoryboardName</key>
+    <string>LaunchScreen</string>
+    <key>UIMainStoryboardFile</key>
+    <string>Main</string>
+    <key>UIViewControllerBasedStatusBarAppearance</key>
+    <true/>
+    <key>UIStatusBarStyle</key>
+    <string>UIStatusBarStyleDefault</string>
+    
+    <!-- Security and Encryption -->
+    <key>ITSAppUsesNonExemptEncryption</key>
+    <true/>
+    <key>ITSEncryptionExportComplianceCode</key>
+    <string>$(ENCRYPTION_EXPORT_COMPLIANCE_CODE)</string>
+    <key>LSMinimumSystemVersion</key>
+    <string>15.0</string>
+</dict>
+</plist>
