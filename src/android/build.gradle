@@ -1,0 +1,78 @@
+buildscript {
+    ext {
+        kotlin_version = '1.8.0'
+        compose_version = '1.4.3'
+        coroutines_version = '1.7.1'
+        androidx_core_version = '1.10.0'
+        security_crypto_version = '1.1.0-alpha06'
+        biometric_version = '1.2.0-alpha05'
+        work_version = '2.8.1'
+        build_cache_dir = "${rootProject.buildDir}/build-cache"
+        min_sdk_version = 24
+        target_sdk_version = 33
+        compile_sdk_version = 33
+        proguard_rules_pro = 'proguard-rules.pro'
+    }
+
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.1.0'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath 'com.google.gms:google-services:4.3.15'
+        classpath 'org.gradle.dependency.verification:plugin:1.0.0'
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+        maven { url 'https://jitpack.io' }
+        maven { url 'https://androidx.dev/storage/compose-compiler/repository' }
+    }
+
+    buildscript {
+        ext.enableBuildCache = true
+        ext.buildCacheDir = rootProject.ext.build_cache_dir
+        ext.buildCachePush = true
+        ext.buildCacheEncryption = true
+        ext.buildCacheMaxSize = '5GB'
+    }
+
+    configurations.all {
+        resolutionStrategy {
+            force "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+            force "org.jetbrains.kotlin:kotlin-stdlib-common:$kotlin_version"
+            force "androidx.core:core-ktx:$androidx_core_version"
+            force "androidx.security:security-crypto:$security_crypto_version"
+            force "androidx.biometric:biometric:$biometric_version"
+            force "androidx.work:work-runtime-ktx:$work_version"
+        }
+    }
+}
+
+dependencyVerification {
+    verify = true
+    configuration {
+        trustLevel = HIGH
+        minimumTlsVersion = 'TLSv1.3'
+        certificatePinning = true
+    }
+}
+
+buildCache {
+    local {
+        directory = file(rootProject.ext.build_cache_dir)
+        removeUnusedEntriesAfterDays = 30
+        push = true
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}
