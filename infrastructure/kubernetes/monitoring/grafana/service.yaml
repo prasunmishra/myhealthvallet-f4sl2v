@@ -1,0 +1,61 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana
+  namespace: phrsat
+  labels:
+    # Core service identification
+    app: grafana
+    component: monitoring
+    part-of: observability-stack
+    managed-by: kubernetes
+    
+    # Additional operational labels
+    app.kubernetes.io/name: grafana
+    app.kubernetes.io/component: monitoring
+    app.kubernetes.io/part-of: phrsat-platform
+    
+  annotations:
+    # Prometheus integration
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "3000"
+    
+    # Monitoring and observability
+    service.beta.kubernetes.io/monitor: "true"
+    
+    # Security configurations
+    security.phrsat.io/tls-required: "true"
+    service.beta.kubernetes.io/internal-traffic-only: "true"
+    
+    # Service mesh integration
+    sidecar.istio.io/inject: "true"
+    
+    # Load balancing optimization
+    service.kubernetes.io/topology-aware-hints: "auto"
+    
+    # Documentation
+    kubernetes.io/description: "Grafana monitoring dashboard service for PHRSAT platform"
+
+spec:
+  type: ClusterIP
+  ports:
+    - name: http-grafana
+      port: 3000
+      targetPort: 3000
+      protocol: TCP
+      
+  selector:
+    app: grafana
+    component: monitoring
+    
+  # Session affinity configuration for consistent routing
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800  # 3 hour timeout
+      
+  # Internal traffic policy for security
+  internalTrafficPolicy: Local
+  
+  # Publishing not required as service is internal only
+  publishNotReadyAddresses: false
