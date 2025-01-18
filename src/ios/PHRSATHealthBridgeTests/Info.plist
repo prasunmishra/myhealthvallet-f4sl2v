@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- Bundle Identification -->
+    <key>CFBundleIdentifier</key>
+    <string>$(PRODUCT_BUNDLE_IDENTIFIER).tests</string>
+    <key>CFBundleName</key>
+    <string>$(PRODUCT_NAME)Tests</string>
+    <key>CFBundlePackageType</key>
+    <string>BNDL</string>
+    <key>CFBundleShortVersionString</key>
+    <string>1.0</string>
+    <key>CFBundleVersion</key>
+    <string>1</string>
+    <key>CFBundleInfoDictionaryVersion</key>
+    <string>6.0</string>
+
+    <!-- Test Bundle Settings -->
+    <key>PRODUCT_NAME</key>
+    <string>PHRSATHealthBridgeTests</string>
+    <key>WRAPPER_EXTENSION</key>
+    <string>xctest</string>
+    <key>SKIP_INSTALL</key>
+    <true/>
+    <key>ENABLE_BITCODE</key>
+    <false/>
+
+    <!-- Test Execution Configuration -->
+    <key>ENABLE_TESTABILITY</key>
+    <true/>
+    <key>TEST_TARGET_NAME</key>
+    <string>PHRSATHealthBridge</string>
+    <key>TEST_HOST</key>
+    <string>$(BUILT_PRODUCTS_DIR)/PHRSATHealthBridge.app/PHRSATHealthBridge</string>
+
+    <!-- Application Environment Settings -->
+    <key>LSMinimumSystemVersion</key>
+    <string>13.0</string>
+    <key>TARGETED_DEVICE_FAMILY</key>
+    <string>1,2</string>
+    <key>LSRequiresIPhoneOS</key>
+    <true/>
+    <key>UIRequiresFullScreen</key>
+    <true/>
+
+    <!-- Application Execution Settings -->
+    <key>NSPrincipalClass</key>
+    <string>$(PRODUCT_MODULE_NAME).TestingAppDelegate</string>
+    <key>UIRequiredDeviceCapabilities</key>
+    <array>
+        <string>armv7</string>
+        <string>healthkit</string>
+    </array>
+    <key>UIBackgroundModes</key>
+    <array>
+        <string>fetch</string>
+        <string>remote-notification</string>
+    </array>
+
+    <!-- Testing Capabilities -->
+    <key>NSHealthShareUsageDescription</key>
+    <string>Health data access required for testing health record integration</string>
+    <key>NSHealthUpdateUsageDescription</key>
+    <string>Health data updates required for testing health record synchronization</string>
+    <key>UISupportsDocumentBrowser</key>
+    <true/>
+
+    <!-- CI/CD Settings -->
+    <key>CODE_SIGN_STYLE</key>
+    <string>Automatic</string>
+    <key>CODE_SIGN_IDENTITY</key>
+    <string>Apple Development</string>
+    <key>DEVELOPMENT_TEAM</key>
+    <string>$(DEVELOPMENT_TEAM)</string>
+</dict>
+</plist>
