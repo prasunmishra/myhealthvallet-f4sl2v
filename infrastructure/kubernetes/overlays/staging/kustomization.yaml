@@ -1,0 +1,106 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Reference the base configuration
+bases:
+  - ../../base
+
+# Add staging environment prefix to all resources
+namePrefix: staging-
+
+# Environment-specific labels
+commonLabels:
+  environment: staging
+  app.kubernetes.io/environment: staging
+  app.kubernetes.io/managed-by: kustomize
+  security.phrsat.com/environment: staging
+  security.phrsat.com/compliance: hipaa
+  monitoring.phrsat.com/enabled: "true"
+  monitoring.phrsat.com/environment: staging
+
+# Environment-specific annotations
+commonAnnotations:
+  environment.phrsat.com/name: staging
+  environment.phrsat.com/type: pre-production
+  environment.phrsat.com/purpose: testing and validation
+  security.phrsat.com/scan-required: "true"
+  security.phrsat.com/last-review: "2023-10-01"
+  monitoring.phrsat.com/profile: staging
+  monitoring.phrsat.com/grafana-dashboard: phrsat-staging
+  maintainer: "PHRSAT Platform Team"
+  contact: "platform@phrsat.com"
+
+# Strategic merge patches for customizing deployments
+patchesStrategicMerge:
+  - patches/api-deployment-patch.yaml
+  - patches/web-deployment-patch.yaml
+  - patches/workers-deployment-patch.yaml
+  - patches/security-context-patch.yaml
+  - patches/network-policy-patch.yaml
+
+# Environment-specific ConfigMap generation
+configMapGenerator:
+  - name: api-config
+    behavior: merge
+    literals:
+      - ENV_STATE=staging
+      - DEBUG=true
+      - SENTRY_ENVIRONMENT=staging
+      - ALLOWED_HOSTS=staging-api.phrsat.com,localhost
+      - MONGODB_URL=mongodb://staging-mongodb:27017/phrsat
+      - REDIS_URL=redis://staging-redis:6379/0
+      - LOG_LEVEL=debug
+      - ENABLE_PROFILING=true
+      - SECURITY_SCAN_ENABLED=true
+      - METRICS_ENABLED=true
+      - TRACING_ENABLED=true
+
+# Resource count specifications for staging environment
+replicas:
+  - name: api-deployment
+    count: 2
+  - name: web-deployment
+    count: 2
+  - name: workers-deployment
+    count: 1
+
+# Resource limits and requests adjustments
+resources:
+  - name: api-deployment
+    limits:
+      cpu: "1"
+      memory: 2Gi
+    requests:
+      cpu: "500m"
+      memory: 1Gi
+  - name: web-deployment
+    limits:
+      cpu: "500m"
+      memory: 1Gi
+    requests:
+      cpu: "250m"
+      memory: 512Mi
+  - name: workers-deployment
+    limits:
+      cpu: "1"
+      memory: 2Gi
+    requests:
+      cpu: "500m"
+      memory: 1Gi
+
+# Additional security configurations
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  fsGroup: 2000
+  seccompProfile:
+    type: RuntimeDefault
+
+# Network policies
+networkPolicies:
+  - name: default-deny
+    spec:
+      podSelector: {}
+      policyTypes:
+        - Ingress
+        - Egress
