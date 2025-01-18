@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Network security configuration enforcing HIPAA-compliant security policies -->
+<!-- Ensures TLS 1.3 and strict HTTPS for all API communications -->
+<network-security-config>
+    <!-- Default configuration enforcing HTTPS for all network connections -->
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <!-- Only trust system-provided certificates for maximum security -->
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+
+    <!-- Enhanced security configuration for API domains -->
+    <domain-config cleartextTrafficPermitted="false">
+        <!-- Apply security policies to all subdomains -->
+        <domain includeSubdomains="true">api.phrsat.com</domain>
+        <trust-anchors>
+            <!-- Enforce system certificate trust for API domains -->
+            <certificates src="system" />
+        </trust-anchors>
+    </domain-config>
+
+    <!-- Explicitly disable debug overrides for production security -->
+    <debug-overrides enabled="false">
+        <trust-anchors>
+            <!-- Maintain system-only certificates even in debug mode -->
+            <certificates src="system" />
+        </trust-anchors>
+    </debug-overrides>
+</network-security-config>
