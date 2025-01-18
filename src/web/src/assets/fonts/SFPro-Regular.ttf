@@ -1,0 +1,10 @@
+Important implementation notes:
+
+1. This file should be obtained from Apple's official SF Pro font distribution
+2. File should be optimized according to the specification:
+   - Convert to WOFF2 format as primary delivery format
+   - Create WOFF and TTF fallbacks
+   - Implement dynamic subsetting for latin and latin-ext character sets
+   - Configure proper cache headers and CORS settings
+3. Font should be referenced in the application's font face declarations
+4. Ensure proper licensing compliance for SF Pro font usage
