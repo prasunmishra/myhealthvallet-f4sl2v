@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: phrsat
+  labels:
+    # Core application labels
+    app.kubernetes.io/name: phrsat
+    app.kubernetes.io/part-of: phrsat-platform
+    app.kubernetes.io/managed-by: kustomize
+    
+    # Integration enablement flags
+    istio-injection: enabled
+    network-policy: enabled
+    monitoring: enabled
+    
+    # Security configuration
+    security.istio.io/tlsMode: strict
+    
+  annotations:
+    # Ownership and contact information
+    maintainer: "PHRSAT Platform Team"
+    contact: "platform@phrsat.com"
+    description: "Primary namespace for PHRSAT application components"
+    
+    # Security configurations
+    kubernetes.io/security-profile: "restricted"
+    policy.kubernetes.io/network-isolation: "enabled"
+    
+    # Backup configuration
+    backup.velero.io/backup-strategy: "daily"
