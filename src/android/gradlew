@@ -1,0 +1,131 @@
+#!/bin/sh
+
+# Enhanced Gradle Wrapper script for PHRSAT Android application
+# Version: 1.0.0
+# Supports Gradle 8.1.0 with enhanced security and performance features
+
+# Fail on any error with enhanced logging
+set -e
+
+# Enhanced error handling with detailed logging
+die() {
+    echo "ERROR: $1 (Line: $2)"
+    echo "Timestamp: $(date '+%Y-%m-%d %H:%M:%S')"
+    echo "System: $(uname -a)"
+    echo "Java Version: $(java -version 2>&1)"
+    if [ -f "$APP_HOME/gradle.log" ]; then
+        rm -f "$APP_HOME/gradle.log"
+    fi
+    exit 1
+}
+
+# Validate Java environment and security requirements
+validate_environment() {
+    # Verify Java installation
+    if [ -z "$JAVA_HOME" ]; then
+        die "JAVA_HOME is not set" $LINENO
+    fi
+
+    if [ ! -x "$JAVA_HOME/bin/java" ]; then
+        die "Java executable not found at $JAVA_HOME/bin/java" $LINENO
+    fi
+
+    # Verify Java version (minimum 1.8)
+    JAVA_VERSION=$("$JAVA_HOME/bin/java" -version 2>&1 | awk -F '"' '/version/ {print $2}')
+    if [ "$(echo "$JAVA_VERSION" | cut -d. -f1)" -lt "1" ] || \
+       [ "$(echo "$JAVA_VERSION" | cut -d. -f2)" -lt "8" ]; then
+        die "Java 1.8 or higher is required" $LINENO
+    fi
+
+    # Verify required disk space (minimum 1GB)
+    FREE_SPACE=$(df -k . | awk 'NR==2 {print $4}')
+    if [ "$FREE_SPACE" -lt 1048576 ]; then
+        die "Insufficient disk space. Minimum 1GB required" $LINENO
+    fi
+
+    # Verify wrapper jar exists and has correct permissions
+    if [ ! -f "$APP_HOME/gradle/wrapper/gradle-wrapper.jar" ]; then
+        die "Gradle wrapper JAR missing" $LINENO
+    fi
+    
+    if [ ! -r "$APP_HOME/gradle/wrapper/gradle-wrapper.jar" ]; then
+        die "Gradle wrapper JAR not readable" $LINENO
+    fi
+}
+
+# Initialize environment with optimized settings
+init() {
+    # Determine APP_HOME with enhanced path validation
+    PRG="$0"
+    while [ -h "$PRG" ]; do
+        ls=$(ls -ld "$PRG")
+        link=$(expr "$ls" : '.*-> \(.*\)$')
+        if expr "$link" : '/.*' > /dev/null; then
+            PRG="$link"
+        else
+            PRG=$(dirname "$PRG")"/$link"
+        fi
+    done
+    
+    APP_HOME=$(dirname "$PRG")
+    APP_HOME=$(cd "$APP_HOME" >/dev/null && pwd)
+
+    # Set secure CLASSPATH
+    CLASSPATH=$APP_HOME/gradle/wrapper/gradle-wrapper.jar
+
+    # Set optimized JVM options for performance
+    DEFAULT_JVM_OPTS='--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED'
+
+    # Configure optimized Gradle options
+    GRADLE_OPTS="$GRADLE_OPTS \
+        -Dorg.gradle.daemon=true \
+        -Dorg.gradle.parallel=true \
+        -Dorg.gradle.caching=true \
+        -Xmx4g \
+        -XX:MaxPermSize=2048m \
+        -XX:+HeapDumpOnOutOfMemoryError"
+
+    # Configure proxy if needed
+    if [ ! -z "$HTTP_PROXY" ]; then
+        GRADLE_OPTS="$GRADLE_OPTS \
+            -Dhttp.proxyHost=$(echo $HTTP_PROXY | cut -d: -f1) \
+            -Dhttp.proxyPort=$(echo $HTTP_PROXY | cut -d: -f2)"
+    fi
+}
+
+# Execute Gradle command with enhanced security and monitoring
+execute() {
+    validate_environment
+
+    # Sanitize input arguments
+    SANITIZED_ARGS=""
+    for arg in "$@"; do
+        # Basic input sanitization
+        arg=$(echo "$arg" | sed 's/[;<>`|]//g')
+        SANITIZED_ARGS="$SANITIZED_ARGS \"$arg\""
+    done
+
+    # Start performance monitoring
+    START_TIME=$(date +%s)
+
+    # Execute Gradle with security context
+    eval "\"$JAVA_HOME/bin/java\"" \
+        $DEFAULT_JVM_OPTS \
+        $GRADLE_OPTS \
+        -classpath "$CLASSPATH" \
+        org.gradle.wrapper.GradleWrapperMain \
+        $SANITIZED_ARGS
+
+    EXIT_CODE=$?
+
+    # Log build metrics
+    END_TIME=$(date +%s)
+    DURATION=$((END_TIME - START_TIME))
+    echo "Build completed in ${DURATION}s with exit code: $EXIT_CODE"
+
+    return $EXIT_CODE
+}
+
+# Main script execution
+init
+execute "$@"
