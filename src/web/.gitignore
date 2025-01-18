@@ -1,0 +1,134 @@
+# Dependencies
+node_modules/
+/.pnp
+.pnp.js
+
+# Testing
+/coverage
+*.test.log
+/test-results
+
+# Production
+/build
+/dist
+*.bundle.js
+*.chunk.js
+
+# Development
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.*
+
+# Security
+*.key
+*.pem
+*.crt
+*.cer
+*.pfx
+*.p12
+*.[sS]ecret*
+*.[kK]ey*
+*.[pP]assword*
+*.[cC]redential*
+
+# Health Data
+*.phi.tmp
+*.health.cache
+*.patient.*
+*.[pP][hH][iI].*
+health-records/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+debug.log*
+error.log*
+
+# Editor
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+*.sublime-*
+
+# OS
+.DS_Store
+Thumbs.db
+*.tmp
+*.temp
+desktop.ini
+ehthumbs.db
+$RECYCLE.BIN/
+
+# TypeScript
+*.tsbuildinfo
+tsconfig.tsbuildinfo
+*.js.map
+
+# Cache
+.eslintcache
+.cache/
+.npm/
+.yarn/
+*.cache
+.parcel-cache/
+
+# Build
+.next/
+out/
+.nuxt/
+.docz/
+storybook-static/
+.serverless/
+
+# Temporary files
+*.bak
+*.backup
+*.old
+*.tmp
+temp/
+tmp/
+
+# HIPAA Compliance
+*.[pP]atient[dD]ata*
+*.[mM]edical[rR]ecord*
+*.[hH]ealth[iI]nfo*
+*.hipaa.*
+*confidential*
+
+# Certificates and Keys
+.cert/
+.ssh/
+certificates/
+*.keystore
+*.jks
+
+# API and Configuration
+swagger.*.json
+api.config.*
+*.config.prod.*
+*.config.staging.*
+*.[cC]onfig.[sS]ecret.*
+
+# Package Managers
+yarn.lock
+package-lock.json
+npm-shrinkwrap.json
+.yarnrc
+.npmrc
+
+# IDE Performance
+.history/
+.vscode-test/
+*.code-workspace
+.metals/
+.scala/
