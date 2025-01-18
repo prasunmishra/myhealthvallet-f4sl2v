@@ -1,0 +1,298 @@
+# fastlane 2.210.0
+# Plugins:
+# - fastlane-plugin-versioning 2.210.0
+# - fastlane-plugin-firebase_app_distribution 2.210.0 
+# - fastlane-plugin-aws_s3 2.210.0
+# - fastlane-plugin-datadog 2.210.0
+
+# Import required fastlane actions and helpers
+fastlane_require 'json'
+fastlane_require 'securerandom'
+fastlane_require 'fileutils'
+
+# Global configuration
+WORKSPACE = "PHRSATHealthBridge.xcworkspace"
+SCHEME = "PHRSATHealthBridge"
+BUILD_PATH = "./build"
+EXPORT_METHOD = "app-store"
+ARTIFACT_PATH = "./artifacts"
+LOG_PATH = "./logs"
+ROLLBACK_PATH = "./rollback"
+
+# Error handling and monitoring
+error_callback = lambda do |lane, exception, options|
+  # Log error details
+  error_id = SecureRandom.uuid
+  error_log = {
+    id: error_id,
+    timestamp: Time.now.iso8601,
+    lane: lane,
+    error: exception.message,
+    backtrace: exception.backtrace
+  }
+  
+  # Send error to monitoring
+  datadog_event(
+    api_key: ENV["DATADOG_API_KEY"],
+    title: "Fastlane Error: #{lane}",
+    text: error_log.to_json,
+    alert_type: "error",
+    tags: ["environment:#{ENV['ENVIRONMENT']}", "error_id:#{error_id}"]
+  )
+  
+  # Trigger rollback if in deployment lanes
+  if ["beta", "release"].include?(lane)
+    rollback(error_id)
+  end
+end
+
+# Environment validation decorator
+def ensure_environment
+  unless ENV["ENVIRONMENT"] && ENV["APPLE_ID"] && ENV["TEAM_ID"] && ENV["MATCH_GIT_URL"]
+    UI.user_error!("Missing required environment variables")
+  end
+end
+
+# Certificate validation decorator
+def ensure_certificates
+  unless is_ci
+    match(
+      type: "appstore",
+      readonly: true,
+      fail_on_name_taken: true
+    )
+  end
+end
+
+# Monitoring decorator
+def monitor_deployment
+  datadog_event(
+    api_key: ENV["DATADOG_API_KEY"],
+    title: "Deployment Started",
+    text: "Starting deployment for #{SCHEME}",
+    alert_type: "info"
+  )
+end
+
+before_all do |lane, options|
+  ensure_environment
+  
+  # Setup logging
+  FileUtils.mkdir_p([BUILD_PATH, ARTIFACT_PATH, LOG_PATH, ROLLBACK_PATH])
+  
+  # Initialize monitoring
+  datadog_init(
+    api_key: ENV["DATADOG_API_KEY"],
+    app_key: ENV["DATADOG_APP_KEY"]
+  )
+  
+  # Verify cocoapods installation
+  cocoapods(
+    clean_install: true,
+    repo_update: true
+  )
+  
+  # Setup code signing
+  setup_ci if is_ci
+  match(
+    type: "development",
+    readonly: true,
+    app_identifier: app_identifier
+  )
+  
+  # Clear derived data
+  clear_derived_data
+  
+  # Archive current state for rollback
+  backup_xcarchive
+end
+
+desc "Run comprehensive test suite"
+lane :test do
+  # Run static analysis
+  swiftlint(
+    strict: true,
+    reporter: "junit",
+    output_file: "#{LOG_PATH}/swiftlint.xml"
+  )
+  
+  # Security scan
+  Dir.chdir("..") do
+    sh("security analyze-source --output #{LOG_PATH}/security_scan.json")
+  end
+  
+  # Run tests in parallel
+  scan(
+    workspace: WORKSPACE,
+    scheme: SCHEME,
+    clean: true,
+    code_coverage: true,
+    parallel_testing: true,
+    concurrent_workers: 4,
+    output_directory: LOG_PATH,
+    output_types: "html,junit",
+    fail_build: true
+  )
+  
+  # Process and upload results
+  process_test_results
+end
+
+desc "Deploy beta build to Firebase"
+lane :beta do
+  # Increment build number
+  increment_build_number(
+    build_number: latest_testflight_build_number + 1
+  )
+  
+  # Build and archive
+  build_ios_app(
+    workspace: WORKSPACE,
+    scheme: SCHEME,
+    clean: true,
+    export_method: "ad-hoc",
+    build_path: BUILD_PATH,
+    output_directory: ARTIFACT_PATH,
+    include_symbols: true,
+    include_bitcode: true
+  )
+  
+  # Upload to Firebase
+  firebase_app_distribution(
+    app: ENV["FIREBASE_APP_ID"],
+    groups: "beta-testers",
+    release_notes: generate_changelog,
+    firebase_cli_token: ENV["FIREBASE_TOKEN"]
+  )
+  
+  # Archive artifacts
+  aws_s3(
+    bucket: ENV["AWS_BUCKET"],
+    region: ENV["AWS_REGION"],
+    files: Dir["#{ARTIFACT_PATH}/*"]
+  )
+  
+  # Update monitoring
+  update_deployment_status("beta")
+end
+
+desc "Deploy to App Store with phased release"
+lane :release do
+  # Verify version compliance
+  ensure_semantic_version
+  
+  # Production signing
+  match(
+    type: "appstore",
+    readonly: true,
+    app_identifier: app_identifier
+  )
+  
+  # Build production IPA
+  build_ios_app(
+    workspace: WORKSPACE,
+    scheme: SCHEME,
+    clean: true,
+    export_method: EXPORT_METHOD,
+    build_path: BUILD_PATH,
+    output_directory: ARTIFACT_PATH,
+    include_symbols: true,
+    include_bitcode: true,
+    export_options: {
+      provisioningProfiles: {
+        app_identifier => "match AppStore #{app_identifier}"
+      }
+    }
+  )
+  
+  # Upload to App Store
+  upload_to_app_store(
+    submit_for_review: true,
+    automatic_release: false,
+    phased_release: true,
+    force: true,
+    skip_metadata: false,
+    skip_screenshots: true,
+    submission_information: {
+      add_id_info_uses_idfa: false,
+      export_compliance_uses_encryption: true,
+      export_compliance_encryption_updated: false
+    }
+  )
+  
+  # Create git tag
+  add_git_tag(
+    tag: "v#{get_version_number}"
+  )
+  
+  # Archive deployment
+  archive_deployment
+  
+  # Update monitoring
+  update_deployment_status("production")
+end
+
+# Helper methods
+def process_test_results
+  # Process coverage data
+  xcov(
+    workspace: WORKSPACE,
+    scheme: SCHEME,
+    output_directory: "#{LOG_PATH}/coverage",
+    minimum_coverage_percentage: 80.0
+  )
+  
+  # Upload results to monitoring
+  Dir.glob("#{LOG_PATH}/**/*").each do |file|
+    aws_s3(
+      bucket: ENV["AWS_BUCKET"],
+      region: ENV["AWS_REGION"],
+      files: [file],
+      path: "test-results/#{Time.now.strftime('%Y-%m-%d')}"
+    )
+  end
+end
+
+def backup_xcarchive
+  FileUtils.cp_r(
+    "#{BUILD_PATH}/#{SCHEME}.xcarchive",
+    "#{ROLLBACK_PATH}/#{Time.now.strftime('%Y%m%d%H%M%S')}.xcarchive"
+  )
+end
+
+def update_deployment_status(environment)
+  datadog_event(
+    api_key: ENV["DATADOG_API_KEY"],
+    title: "Deployment Completed",
+    text: "Successfully deployed #{SCHEME} to #{environment}",
+    alert_type: "success",
+    tags: ["environment:#{environment}", "version:#{get_version_number}"]
+  )
+end
+
+def rollback(error_id)
+  UI.important("Initiating rollback due to error: #{error_id}")
+  
+  # Find latest successful archive
+  latest_archive = Dir["#{ROLLBACK_PATH}/*.xcarchive"].sort.last
+  
+  if latest_archive
+    # Restore archive
+    FileUtils.cp_r(latest_archive, "#{BUILD_PATH}/#{SCHEME}.xcarchive")
+    
+    # Notify monitoring
+    datadog_event(
+      api_key: ENV["DATADOG_API_KEY"],
+      title: "Deployment Rollback",
+      text: "Rolled back to archive: #{File.basename(latest_archive)}",
+      alert_type: "warning"
+    )
+  end
+end
+
+def ensure_semantic_version
+  version = get_version_number
+  unless version =~ /^\d+\.\d+\.\d+$/
+    UI.user_error!("Version number #{version} does not follow semantic versioning")
+  end
+end
