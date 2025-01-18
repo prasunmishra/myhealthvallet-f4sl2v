@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" 
+     viewBox="0 0 24 24" 
+     width="100%" 
+     height="100%" 
+     preserveAspectRatio="xMidYMid meet"
+     role="img"
+     aria-labelledby="logo-title logo-desc"
+     xml:lang="en">
+    
+    <!-- Accessibility Labels -->
+    <title id="logo-title">Personal Health Record Store and Analysis Tool Logo</title>
+    <desc id="logo-desc">A modern, professional healthcare-themed logo representing the PHRSAT application</desc>
+    
+    <!-- Logo Container -->
+    <defs>
+        <!-- Light Mode Colors -->
+        <style>
+            @media (prefers-color-scheme: light) {
+                .primary { fill: #2196F3; }
+                .secondary { fill: #4CAF50; }
+            }
+            /* Dark Mode Colors */
+            @media (prefers-color-scheme: dark) {
+                .primary { fill: #42A5F5; }
+                .secondary { fill: #66BB6A; }
+            }
+            /* Responsive Sizing */
+            @media screen and (max-width: 768px) {
+                svg { width: 32px; height: 32px; }
+            }
+            @media screen and (min-width: 769px) and (max-width: 1024px) {
+                svg { width: 40px; height: 40px; }
+            }
+            @media screen and (min-width: 1025px) {
+                svg { width: 48px; height: 48px; }
+            }
+            @media screen and (min-resolution: 192dpi) {
+                svg { width: 96px; height: 96px; }
+            }
+        </style>
+    </defs>
+
+    <!-- Main Logo Shape -->
+    <g transform="translate(2, 2)">
+        <!-- Health Cross Symbol -->
+        <path class="primary"
+              d="M10 0C4.48 0 0 4.48 0 10s4.48 10 10 10 10-4.48 10-10S15.52 0 10 0zm5 11h-4v4H9v-4H5V9h4V5h2v4h4v2z"
+              fill-rule="evenodd"
+              stroke="none"
+              stroke-width="0"/>
+              
+        <!-- Data Analysis Overlay -->
+        <path class="secondary"
+              d="M15 7l-5 5-2-2-3 3 2 2 3-3 5-5z"
+              fill-rule="evenodd"
+              stroke="none"
+              stroke-width="0"
+              opacity="0.9"/>
+    </g>
+</svg>
