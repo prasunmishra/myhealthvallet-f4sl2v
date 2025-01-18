@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- HealthKit capability for comprehensive health data access -->
+    <key>com.apple.developer.healthkit</key>
+    <true/>
+    
+    <!-- Specific HealthKit access permissions -->
+    <key>com.apple.developer.healthkit.access</key>
+    <array>
+        <string>health-records</string>
+        <string>clinical-health-records</string>
+        <string>health-metrics</string>
+        <string>workout-data</string>
+    </array>
+    
+    <!-- Enable background HealthKit data delivery -->
+    <key>com.apple.developer.healthkit.background-delivery</key>
+    <true/>
+    
+    <!-- Keychain access groups for secure data sharing -->
+    <key>keychain-access-groups</key>
+    <array>
+        <string>$(AppIdentifierPrefix)com.phrsat.healthbridge.keychain</string>
+        <string>$(AppIdentifierPrefix)com.phrsat.healthbridge.shared</string>
+    </array>
+    
+    <!-- App groups for secure container sharing -->
+    <key>com.apple.security.application-groups</key>
+    <array>
+        <string>group.com.phrsat.healthbridge</string>
+        <string>group.com.phrsat.healthbridge.shared</string>
+    </array>
+    
+    <!-- Complete file protection for stored data -->
+    <key>com.apple.developer.default-data-protection</key>
+    <string>NSFileProtectionComplete</string>
+</dict>
+</plist>
