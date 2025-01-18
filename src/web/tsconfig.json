@@ -1,0 +1,68 @@
+{
+  "compilerOptions": {
+    "target": "es2020",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "incremental": true,
+    "baseUrl": "src",
+    "paths": {
+      "@/*": ["*"],
+      "@components/*": ["components/*"],
+      "@screens/*": ["screens/*"],
+      "@services/*": ["services/*"],
+      "@store/*": ["store/*"],
+      "@utils/*": ["utils/*"],
+      "@hooks/*": ["hooks/*"],
+      "@types/*": ["types/*"],
+      "@assets/*": ["assets/*"],
+      "@config/*": ["config/*"],
+      "@constants/*": ["constants/*"],
+      "@health-records/*": ["domains/health-records/*"],
+      "@analytics/*": ["domains/analytics/*"],
+      "@security/*": ["domains/security/*"],
+      "@phi/*": ["domains/phi/*"]
+    }
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "tests/**/*.ts",
+    "tests/**/*.tsx",
+    "src/**/*.json"
+  ],
+  "exclude": [
+    "node_modules",
+    "build",
+    "dist",
+    "coverage",
+    "public",
+    "**/*.spec.ts",
+    "**/*.test.ts",
+    "**/*.stories.tsx"
+  ]
+}
