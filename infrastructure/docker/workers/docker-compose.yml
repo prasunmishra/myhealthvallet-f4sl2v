@@ -1,0 +1,171 @@
+version: '3.8'
+
+# HIPAA-compliant worker services configuration
+services:
+  # Secure Redis message broker and results backend
+  redis:
+    image: redis:7.0-alpine
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    networks:
+      - worker-net
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 1G
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+
+  # Document processing worker with GPU support
+  document-worker:
+    build:
+      context: ../../../
+      dockerfile: infrastructure/docker/workers/Dockerfile
+      args:
+        ENABLE_GPU: "true"
+    command: celery -A workers.celery worker -Q document-ocr -c 4 --max-memory-per-child=512000
+    environment:
+      - PYTHONPATH=/app
+      - PYTHONUNBUFFERED=1
+      - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379/0
+      - WORKERS_PER_CORE=2
+      - MAX_WORKERS=8
+      - LOG_LEVEL=INFO
+      - ENABLE_GPU=true
+    depends_on:
+      redis:
+        condition: service_healthy
+    volumes:
+      - tmp-storage:/tmp
+      - /dev/shm:/dev/shm
+    networks:
+      - worker-net
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 8G
+          nvidia.com/gpu: 1
+        reservations:
+          cpus: '2'
+          memory: 4G
+    healthcheck:
+      test: ["CMD", "celery", "inspect", "ping", "-A", "workers.celery"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Health data sync worker
+  health-sync-worker:
+    build:
+      context: ../../../
+      dockerfile: infrastructure/docker/workers/Dockerfile
+    command: celery -A workers.celery worker -Q health-sync -c 2 --max-memory-per-child=256000
+    environment:
+      - PYTHONPATH=/app
+      - PYTHONUNBUFFERED=1
+      - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379/0
+      - WORKERS_PER_CORE=1
+      - MAX_WORKERS=4
+      - LOG_LEVEL=INFO
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - worker-net
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+        reservations:
+          cpus: '1'
+          memory: 2G
+    healthcheck:
+      test: ["CMD", "celery", "inspect", "ping", "-A", "workers.celery"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # Health analysis worker with GPU support
+  health-analysis-worker:
+    build:
+      context: ../../../
+      dockerfile: infrastructure/docker/workers/Dockerfile
+      args:
+        ENABLE_GPU: "true"
+    command: celery -A workers.celery worker -Q health-analysis -c 2 --max-memory-per-child=1024000
+    environment:
+      - PYTHONPATH=/app
+      - PYTHONUNBUFFERED=1
+      - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379/0
+      - WORKERS_PER_CORE=1
+      - MAX_WORKERS=4
+      - LOG_LEVEL=INFO
+      - ENABLE_GPU=true
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - worker-net
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 8G
+          nvidia.com/gpu: 1
+        reservations:
+          cpus: '2'
+          memory: 4G
+    healthcheck:
+      test: ["CMD", "celery", "inspect", "ping", "-A", "workers.celery"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+# Secure persistent volumes
+volumes:
+  redis-data:
+    driver: local
+    driver_opts:
+      type: none
+      device: /data/redis
+      o: bind
+  tmp-storage:
+    driver: local
+    driver_opts:
+      type: tmpfs
+      device: tmpfs
+      o: size=1024m,uid=1000
+
+# Isolated network with encryption
+networks:
+  worker-net:
+    driver: bridge
+    driver_opts:
+      encrypted: "true"
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.28.0.0/16
