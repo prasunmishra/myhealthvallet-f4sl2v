@@ -1,0 +1,112 @@
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+.Python
+
+# Virtual environments
+env/
+venv/
+.env
+.env.*
+
+# Security and credentials
+*.key
+*.pem
+*.crt
+*.csr
+*.der
+*.p12
+*.pfx
+*.jks
+*.keystore
+*.truststore
+
+# Testing and coverage
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/
+nosetests.xml
+coverage.xml
+
+# Development tools and caches
+.mypy_cache/
+.dmypy.json
+.ruff_cache/
+.pylint.d/
+
+# Logs
+*.log
+logs/
+log/
+
+# Build and distribution
+dist/
+build/
+*.egg-info/
+*.egg
+pip-log.txt
+pip-delete-this-directory.txt
+
+# IDE settings
+.idea/
+.vscode/
+*.sublime-workspace
+*.sublime-project
+
+# Task queue
+celerybeat-schedule
+celerybeat.pid
+celerybeat-schedule.*
+
+# System files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# Temporary files
+tmp/
+temp/
+.temp/
+
+# Infrastructure and deployment
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+terraform.tfvars
+.terraformrc
+terraform.rc
+
+# Project-specific
+node_modules/
+poetry.lock
+.env.local
+.env.development
+.env.test
+.env.production
+.env.staging
+.secrets/
+credentials/
+certificates/
+keys/
+
+# Documentation build
+docs/_build/
+site/
+
+# Database
+*.sqlite3
+*.db
+*.sql
+
+# Container
+.docker/
+docker-compose.override.yml
+
+# Kubernetes
+kubeconfig
+*.kubeconfig
