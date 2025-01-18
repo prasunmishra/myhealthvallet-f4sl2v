@@ -1,0 +1,97 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Extend base configuration
+bases:
+  - ../../base
+
+# Production namespace
+namespace: phrsat-prod
+
+# Production-specific labels
+commonLabels:
+  environment: production
+  app.kubernetes.io/environment: prod
+  app.kubernetes.io/part-of: phrsat
+  app.kubernetes.io/managed-by: kustomize
+  security.phrsat.com/compliance: hipaa
+  monitoring.phrsat.com/priority: high
+
+# Strategic merge patches for production configurations
+patchesStrategicMerge:
+  # Resource allocation and scaling patches
+  - patches/api-deployment-patch.yaml
+  - patches/web-deployment-patch.yaml
+  - patches/workers-deployment-patch.yaml
+  # Security and reliability patches
+  - patches/security-context-patch.yaml
+  - patches/pod-disruption-budget-patch.yaml
+
+# Additional production-specific resources
+resources:
+  # High Availability
+  - resources/hpa.yaml
+  - resources/pdb.yaml
+  # Security
+  - resources/networkpolicy-prod.yaml
+  - resources/pod-security-policies.yaml
+  - resources/resource-quotas.yaml
+  # Load Balancing
+  - resources/ingress.yaml
+
+# Production ConfigMap generators
+configMapGenerator:
+  - name: api-config
+    behavior: merge
+    envs:
+      - configs/api.env
+  - name: web-config
+    behavior: merge
+    envs:
+      - configs/web.env
+  - name: monitoring-config
+    behavior: merge
+    envs:
+      - configs/monitoring.env
+
+# Production Secret generators
+secretGenerator:
+  - name: api-secrets
+    behavior: merge
+    envs:
+      - secrets/api.env
+  - name: db-credentials
+    behavior: merge
+    envs:
+      - secrets/db.env
+
+# Production image tags
+images:
+  - name: phrsat/api
+    newTag: ${VERSION}
+  - name: phrsat/web
+    newTag: ${VERSION}
+  - name: phrsat/workers
+    newTag: ${VERSION}
+
+# Production replica counts
+replicas:
+  - name: phrsat-api
+    count: 5  # High availability for API
+  - name: phrsat-web
+    count: 3  # Load-balanced web servers
+  - name: phrsat-workers
+    count: 3  # Distributed workers
+
+# Resource transformers
+transformers:
+  - labels.yaml
+  - annotations.yaml
+
+# Production-specific configurations
+configurations:
+  - kustomizeconfig.yaml
+
+# Validation and security settings
+openapi:
+  path: schemas/production-schema.json
