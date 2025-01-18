@@ -1,0 +1,188 @@
+# NetworkPolicy configuration for PHRSAT platform implementing zero-trust network security
+# Version: networking.k8s.io/v1
+# Last updated: 2023-08-01
+
+---
+# Default deny-all policy to enforce zero-trust networking
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: phrsat-default-deny
+  namespace: phrsat
+  labels:
+    app.kubernetes.io/name: phrsat-network-policy
+    app.kubernetes.io/part-of: phrsat-platform
+    app.kubernetes.io/component: security
+    app.kubernetes.io/managed-by: kubernetes
+    security.phrsat.io/policy-type: default-deny
+  annotations:
+    security.phrsat.io/description: "Default deny-all policy for zero-trust implementation"
+    security.phrsat.io/last-reviewed: "2023-08-01"
+spec:
+  # Empty pod selector matches all pods in namespace
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+
+---
+# API service network policy
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: phrsat-api-policy
+  namespace: phrsat
+  labels:
+    app.kubernetes.io/name: phrsat-network-policy
+    app.kubernetes.io/part-of: phrsat-platform
+    app.kubernetes.io/component: security
+    app.kubernetes.io/managed-by: kubernetes
+    security.phrsat.io/policy-type: service-specific
+  annotations:
+    security.phrsat.io/description: "Network policy for API service communication"
+    security.phrsat.io/last-reviewed: "2023-08-01"
+spec:
+  # Select API pods
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: phrsat-api
+      app.kubernetes.io/component: api
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Allow ingress traffic from ingress-nginx namespace
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-nginx
+              kubernetes.io/metadata.name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 8000
+          endPort: 8000
+  egress:
+    # Allow egress to database
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: phrsat
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/component: database
+              app.kubernetes.io/name: phrsat-database
+      ports:
+        - protocol: TCP
+          port: 5432
+    # Allow egress to cache
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: phrsat
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/component: cache
+              app.kubernetes.io/name: phrsat-cache
+      ports:
+        - protocol: TCP
+          port: 6379
+
+---
+# Analytics service network policy
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: phrsat-analytics-policy
+  namespace: phrsat
+  labels:
+    app.kubernetes.io/name: phrsat-network-policy
+    app.kubernetes.io/part-of: phrsat-platform
+    app.kubernetes.io/component: security
+    app.kubernetes.io/managed-by: kubernetes
+    security.phrsat.io/policy-type: service-specific
+  annotations:
+    security.phrsat.io/description: "Network policy for Analytics service communication"
+    security.phrsat.io/last-reviewed: "2023-08-01"
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: phrsat-analytics
+      app.kubernetes.io/component: analytics
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Allow ingress from API service
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: phrsat
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: phrsat-api
+              app.kubernetes.io/component: api
+      ports:
+        - protocol: TCP
+          port: 8001
+  egress:
+    # Allow egress to database
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: phrsat
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/component: database
+              app.kubernetes.io/name: phrsat-database
+      ports:
+        - protocol: TCP
+          port: 5432
+
+---
+# Document service network policy
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: phrsat-document-policy
+  namespace: phrsat
+  labels:
+    app.kubernetes.io/name: phrsat-network-policy
+    app.kubernetes.io/part-of: phrsat-platform
+    app.kubernetes.io/component: security
+    app.kubernetes.io/managed-by: kubernetes
+    security.phrsat.io/policy-type: service-specific
+  annotations:
+    security.phrsat.io/description: "Network policy for Document service communication"
+    security.phrsat.io/last-reviewed: "2023-08-01"
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: phrsat-document
+      app.kubernetes.io/component: document
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Allow ingress from API service
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: phrsat
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: phrsat-api
+              app.kubernetes.io/component: api
+      ports:
+        - protocol: TCP
+          port: 8002
+  egress:
+    # Allow egress to object storage (S3)
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 169.254.0.0/16
+              - 10.0.0.0/8
+      ports:
+        - protocol: TCP
+          port: 443
