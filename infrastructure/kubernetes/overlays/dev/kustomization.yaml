@@ -1,0 +1,47 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Reference the base configuration
+bases:
+  - ../../base
+
+# Add development environment prefix
+namePrefix: dev-
+
+# Development environment specific labels
+commonLabels:
+  environment: development
+  app.kubernetes.io/environment: dev
+  app.kubernetes.io/debug-enabled: "true"
+
+# Strategic merge patches for development environment
+patchesStrategicMerge:
+  - patches/api-deployment-patch.yaml
+  - patches/web-deployment-patch.yaml
+  - patches/workers-deployment-patch.yaml
+
+# Development environment ConfigMap generator
+configMapGenerator:
+  - name: api-config
+    behavior: merge
+    literals:
+      - ENV_STATE=development
+      - DEBUG=true
+      - LOG_LEVEL=debug
+      - SENTRY_ENVIRONMENT=development
+      - ALLOWED_HOSTS=*
+      - PROMETHEUS_SCRAPE_ENABLED=true
+      - DETAILED_LOGGING=enabled
+      - PERFORMANCE_TRACING=enabled
+
+# Development-specific image tags
+images:
+  - name: phrsat/api
+    newTag: dev
+  - name: phrsat/web
+    newTag: dev
+  - name: phrsat/workers
+    newTag: dev
+
+# Additional development environment resources
+resources: []
