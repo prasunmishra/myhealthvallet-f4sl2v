@@ -1,0 +1,88 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: phrsat-workers
+  namespace: phrsat
+  labels:
+    app.kubernetes.io/name: phrsat-workers
+    app.kubernetes.io/part-of: phrsat-platform
+    app.kubernetes.io/component: worker
+spec:
+  # Start with 2 replicas and let VPA handle scaling between 2-10 pods
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: phrsat-workers
+  # Configure rolling updates for zero-downtime deployments
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: phrsat-workers
+        app.kubernetes.io/part-of: phrsat-platform
+        app.kubernetes.io/component: worker
+    spec:
+      # Configure worker pod specifications
+      containers:
+      - name: worker
+        image: phrsat/worker:latest
+        imagePullPolicy: Always
+        command:
+        - celery
+        - -A
+        - workers.celery
+        - worker
+        - -l
+        - info
+        # Resource requests and limits aligned with c5.2xlarge specifications
+        resources:
+          requests:
+            cpu: "1000m"
+            memory: "2Gi"
+          limits:
+            cpu: "2000m"
+            memory: "4Gi"
+        # Load configuration from ConfigMap
+        envFrom:
+        - configMapRef:
+            name: phrsat-workers-config
+        # Security context for non-root execution
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          runAsGroup: 1000
+          readOnlyRootFilesystem: true
+        # Liveness probe to check worker health
+        livenessProbe:
+          exec:
+            command:
+            - celery
+            - -A
+            - workers.celery
+            - inspect
+            - ping
+            - -d
+            - celery@$HOSTNAME
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 10
+        # Readiness probe to check worker availability
+        readinessProbe:
+          exec:
+            command:
+            - celery
+            - -A
+            - workers.celery
+            - inspect
+            - ping
+            - -d
+            - celery@$HOSTNAME
+          initialDelaySeconds: 30
+          periodSeconds: 15
+          timeoutSeconds: 5
+      # Grace period for proper worker shutdown
+      terminationGracePeriodSeconds: 60
