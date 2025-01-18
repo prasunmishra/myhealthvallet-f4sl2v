@@ -1,0 +1,31 @@
+# Requires minimum 2 reviews and code owner approval
+# Security-critical components require 3 reviews
+
+# Default owners for any unmatched files
+# Requires lead architect and security team review
+* @phrsat/lead-architects @phrsat/security-team
+
+# Mobile Applications
+src/android/** @phrsat/android-team @phrsat/mobile-leads @phrsat/security-reviewers
+src/ios/** @phrsat/ios-team @phrsat/mobile-leads @phrsat/security-reviewers
+src/mobile/shared/** @phrsat/mobile-leads @phrsat/security-reviewers
+
+# Web Application
+src/web/** @phrsat/frontend-team @phrsat/web-leads @phrsat/security-reviewers
+
+# Backend Services
+src/backend/** @phrsat/backend-team @phrsat/backend-leads @phrsat/security-reviewers
+src/backend/ml/** @phrsat/ml-team @phrsat/backend-leads @phrsat/data-security
+
+# Infrastructure and DevOps
+infrastructure/** @phrsat/devops-team @phrsat/platform-leads @phrsat/security-infrastructure
+.github/workflows/** @phrsat/devops-team @phrsat/ci-leads @phrsat/security-automation
+
+# Security-Critical Components (Require 3 Reviews)
+src/backend/**/security/** @phrsat/security-team @phrsat/backend-leads @phrsat/compliance-team
+src/**/tests/** @phrsat/qa-team @phrsat/security-testing
+src/**/auth/** @phrsat/security-team @phrsat/auth-specialists
+src/**/encryption/** @phrsat/security-team @phrsat/crypto-specialists
+
+# Protected Health Information Handlers (Require 3 Reviews)
+src/**/phi/** @phrsat/compliance-team @phrsat/security-team @phrsat/phi-handlers
