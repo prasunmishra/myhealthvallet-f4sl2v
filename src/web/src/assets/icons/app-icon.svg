@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="PHRSAT Application Icon">
+    <!-- Optimization settings: precision=2, minified=true -->
+    
+    <!-- Base circle representing health/medical context -->
+    <circle cx="12" cy="12" r="10" fill="#2196F3" />
+    
+    <!-- Heart rate line symbolizing health monitoring -->
+    <path d="M7 12.5L9 10.5L11 14.5L13 8.5L15 12.5L17 10.5" 
+          stroke="#FFFFFF" 
+          stroke-width="2" 
+          stroke-linecap="round" 
+          stroke-linejoin="round"
+          vector-effect="non-scaling-stroke" />
+    
+    <!-- Cross symbol for medical identification -->
+    <path d="M12 8V16M8 12H16" 
+          stroke="#4CAF50" 
+          stroke-width="2" 
+          stroke-linecap="round" 
+          stroke-linejoin="round"
+          vector-effect="non-scaling-stroke" />
+    
+    <!-- Outer ring for visual balance -->
+    <circle cx="12" cy="12" r="11" 
+            stroke="#2196F3" 
+            stroke-width="1" 
+            fill="none" 
+            opacity="0.3" />
+    
+    <!-- Dark mode styles -->
+    <style>
+        @media (prefers-color-scheme: dark) {
+            circle:first-of-type { fill: #90CAF9; }
+            path:last-of-type { stroke: #A5D6A7; }
+            circle:last-of-type { stroke: #90CAF9; }
+        }
+    </style>
+    
+    <!-- PWA and responsive support -->
+    <metadata>
+        <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+                 xmlns:dc="http://purl.org/dc/elements/1.1/">
+            <rdf:Description>
+                <dc:title>PHRSAT Application Icon</dc:title>
+                <dc:creator>PHRSAT Design Team</dc:creator>
+                <dc:format>image/svg+xml</dc:format>
+                <dc:type>Icon</dc:type>
+            </rdf:Description>
+        </rdf:RDF>
+    </metadata>
+</svg>
