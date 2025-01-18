@@ -1,0 +1,76 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: phrsat-workers-config
+  namespace: phrsat
+  labels:
+    app.kubernetes.io/name: phrsat-workers
+    app.kubernetes.io/part-of: phrsat-platform
+    app.kubernetes.io/component: worker
+    app.kubernetes.io/version: 1.0.0
+    security.phrsat.io/hipaa-compliant: "true"
+    monitoring.phrsat.io/enabled: "true"
+data:
+  # Application Configuration
+  ENV_STATE: "production"
+  APP_NAME: "phrsat-workers"
+  APP_VERSION: "1.0.0"
+  DEBUG: "false"
+
+  # Database Connections
+  MONGODB_URL: "mongodb://phrsat-mongodb:27017/phrsat"
+  REDIS_URL: "redis://phrsat-redis:6379/0"
+
+  # Celery Worker Configuration
+  CELERY_BROKER_URL: "redis://phrsat-redis:6379/0"
+  CELERY_RESULT_BACKEND: "redis://phrsat-redis:6379/0"
+  CELERY_TASK_SERIALIZER: "json"
+  CELERY_RESULT_SERIALIZER: "json"
+  CELERY_ACCEPT_CONTENT: "['json']"
+  CELERY_WORKER_PREFETCH_MULTIPLIER: "1"
+  CELERY_WORKER_CONCURRENCY: "8"
+  CELERY_TASK_TRACK_STARTED: "true"
+  CELERY_TASK_TIME_LIMIT: "3600"
+  CELERY_TASK_SOFT_TIME_LIMIT: "3300"
+  CELERY_MAX_TASKS_PER_CHILD: "100"
+
+  # Health Data Standards
+  HEALTH_DATA_FORMAT: "FHIR_R4"
+  HEALTH_DATA_VERSION: "4.0.1"
+
+  # AWS Configuration
+  AWS_REGION: "us-east-1"
+  S3_BUCKET: "phrsat-documents"
+  S3_ENCRYPTION: "AES256"
+
+  # Error Tracking
+  SENTRY_DSN: "https://sentry.phrsat.com"
+  SENTRY_ENVIRONMENT: "production"
+  SENTRY_TRACES_SAMPLE_RATE: "0.1"
+
+  # Logging Configuration
+  LOG_LEVEL: "INFO"
+  LOG_FORMAT: "json"
+
+  # Task Queue Configuration
+  DOCUMENT_OCR_QUEUE: "document-ocr"
+  HEALTH_SYNC_QUEUE: "health-sync"
+  HEALTH_ANALYSIS_QUEUE: "health-analysis"
+  NOTIFICATIONS_QUEUE: "notifications"
+
+  # OCR Configuration
+  OCR_ENGINE: "aws-textract"
+  OCR_CONFIDENCE_THRESHOLD: "0.85"
+
+  # Machine Learning Configuration
+  ML_MODEL_VERSION: "1.0.0"
+  ML_BATCH_SIZE: "32"
+
+  # Monitoring and Observability
+  MONITORING_ENABLED: "true"
+  METRICS_PORT: "9090"
+  HEALTH_CHECK_ENABLED: "true"
+  HEALTH_CHECK_PORT: "8080"
+  TRACING_ENABLED: "true"
+  JAEGER_AGENT_HOST: "jaeger-agent.monitoring"
+  JAEGER_AGENT_PORT: "6831"
