@@ -1,0 +1,92 @@
+[build-system]
+requires = ["poetry-core>=1.5.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "phrsat-backend"
+version = "1.0.0"
+description = "Personal Health Record Store and Analysis Tool Backend Services"
+authors = ["PHRSAT Development Team"]
+license = "Proprietary"
+readme = "README.md"
+repository = "https://github.com/phrsat/backend"
+keywords = ["healthcare", "ML", "AI", "PHR", "HIPAA", "FHIR"]
+python = ">=3.11,<3.12"
+
+[tool.poetry.dependencies]
+python = ">=3.11,<3.12"
+
+# Core Dependencies
+fastapi = "==0.100.0"
+uvicorn = "==0.23.0"
+pydantic = "==2.0.0"
+
+# Machine Learning Dependencies
+tensorflow = "==2.13.0"
+torch = "==2.0.0"
+scikit-learn = "==1.3.0"
+
+# Healthcare Data Processing
+fhir.resources = "==6.5.0"
+pydicom = "==2.4.0"
+hl7 = "==0.4.0"
+
+# Security Dependencies
+python-jose = "==3.3.0"
+cryptography = "==41.0.0"
+passlib = "==1.7.4"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "==7.4.0"
+black = "==23.3.0"
+mypy = "==1.4.0"
+bandit = "==1.7.5"
+safety = "==2.3.0"
+pytest-cov = "==4.1.0"
+
+[tool.pytest]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
+asyncio_mode = "auto"
+markers = [
+    "unit: marks unit tests",
+    "integration: marks integration tests",
+    "slow: marks slow running tests",
+    "security: marks security tests",
+    "hipaa: marks HIPAA compliance tests",
+    "phi: marks PHI handling tests"
+]
+
+[tool.black]
+line-length = 100
+target-version = ["py311"]
+include = "\.pyi?$"
+extend-exclude = "/migrations/"
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 100
+known_first_party = ["api", "core", "ml", "services", "workers"]
+sections = ["FUTURE", "STDLIB", "THIRDPARTY", "HEALTHCARE", "FIRSTPARTY", "LOCALFOLDER"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_return_any = true
+disallow_untyped_defs = true
+plugins = ["pydantic.mypy"]
+exclude = ["tests/"]
+
+[tool.bandit]
+targets = ["src"]
+exclude_dirs = ["tests", "migrations"]
+skips = ["B101"]
+confidence-level = "HIGH"
+severity-level = "MEDIUM"
+
+[tool.safety]
+ignore-cvss-severity-below = 7
+ignore-vulnerabilities = []
+full-report = true
