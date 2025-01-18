@@ -1,0 +1,195 @@
+# Security-sensitive files
+*.pem
+*.key
+*.keystore
+*.jks
+*.p12
+.env
+.env.*
+.aws/
+.ssh/
+secrets/
+credentials/
+*_rsa
+*_dsa
+*_ed25519
+*_ecdsa
+
+# Build artifacts
+build/
+dist/
+out/
+release/
+bin/
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.dll
+*.so
+*.dylib
+
+# Dependencies
+node_modules/
+vendor/
+venv/
+.virtualenv/
+pip-log.txt
+.gradle/
+.mvn/
+bower_components/
+jspm_packages/
+
+# Development tools
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+*.sublime-workspace
+*.sublime-project
+.atom/
+.tmux
+.vagrant/
+
+# Testing and coverage
+coverage/
+.pytest_cache/
+jest-coverage/
+.nyc_output/
+htmlcov/
+.tox/
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+
+# Mobile artifacts
+*.ipa
+*.xcarchive
+*.apk
+*.aab
+*.xcworkspace
+*.pbxuser
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+*.xcuserstate
+project.xcworkspace/
+xcuserdata/
+.gradle/
+local.properties
+*.hmap
+*.dSYM.zip
+*.dSYM
+
+# Container files
+.docker/
+docker-compose.override.yml
+*.dockerfile
+.dockerignore
+
+# System files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# Logs and debugging
+*.log
+logs/
+debug/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pip-log.txt
+pip-delete-this-directory.txt
+
+# CI/CD specific
+.github/workflows/*.local.yml
+.gitlab-ci.local.yml
+.circleci/local/
+.jenkins/local/
+bamboo-specs/local/
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+tmp/
+temp/
+.history/
+*.bak
+*.swx
+*.swo
+*.swn
+*.bak
+*.orig
+
+# Language-specific
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+develop-eggs/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Node
+.npm
+.eslintcache
+.node_repl_history
+.env.test
+.env.production
+.next
+.nuxt
+.vuepress/dist
+
+# Go
+*.exe
+*.test
+*.prof
+*.out
+
+# Swift/Xcode
+*.moved-aside
+*.xccheckout
+*.xcscmblueprint
+DerivedData/
+timeline.xctimeline
+playground.xcworkspace
+
+# Android
+.navigation/
+captures/
+.externalNativeBuild/
+.cxx/
+*.jks
+*.keystore
+!debug.keystore
+
+# IDE specific
+.metals/
+.bloop/
+.ensime
+.ensime_cache/
+.scala_dependencies
+.worksheet
+.nb-gradle/
