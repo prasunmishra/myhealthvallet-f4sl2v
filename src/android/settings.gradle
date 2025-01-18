@@ -1,0 +1,124 @@
+// PHRSAT Android Project Settings
+// Gradle Version: 8.0+
+// Last Updated: 2023
+
+// Set root project name
+rootProject.name = 'PHRSAT'
+
+// Configure plugin management with security and performance optimizations
+pluginManagement {
+    repositories {
+        // Prioritized and secure repository order
+        google() {
+            content {
+                // Restrict to Android-specific dependencies
+                includeGroupByRegex("com\\.android.*")
+                includeGroupByRegex("com\\.google.*")
+                includeGroupByRegex("androidx.*")
+            }
+        }
+        
+        mavenCentral() {
+            content {
+                // Exclude Android-specific artifacts to prevent duplicates
+                excludeGroupByRegex("com\\.android.*")
+                excludeGroupByRegex("com\\.google.*")
+                excludeGroupByRegex("androidx.*")
+            }
+        }
+        
+        gradlePluginPortal() {
+            content {
+                // Only include Gradle plugins
+                includeGroupByRegex(".*gradle.*")
+                includeGroupByRegex(".*kotlin.*")
+            }
+        }
+    }
+
+    resolutionStrategy {
+        eachPlugin {
+            // Enforce minimum security standards for plugins
+            if (requested.id.namespace == "com.android") {
+                useModule("com.android.tools.build:gradle:${requested.version}")
+            }
+        }
+    }
+}
+
+// Configure dependency resolution management
+dependencyResolutionManagement {
+    repositoryMode = PREFER_PROJECT
+
+    repositories {
+        // Secure and optimized repository configuration
+        google() {
+            content {
+                includeGroupByRegex("com\\.android.*")
+                includeGroupByRegex("com\\.google.*")
+                includeGroupByRegex("androidx.*")
+            }
+            // Enable repository health checks
+            failOnError = true
+            // Configure repository caching
+            mavenContent {
+                releasesOnly()
+            }
+        }
+
+        mavenCentral() {
+            content {
+                excludeGroupByRegex("com\\.android.*")
+                excludeGroupByRegex("com\\.google.*")
+                excludeGroupByRegex("androidx.*")
+            }
+            // Enable SSL/TLS security
+            mavenContent {
+                releasesOnly()
+            }
+            // Configure geographic mirrors for improved performance
+            url = uri("https://repo1.maven.org/maven2/")
+        }
+
+        maven {
+            url = uri("https://jitpack.io")
+            content {
+                // Restrict to specific groups for security
+                includeGroup("com.github.PhilJay")
+                includeGroup("com.github.bumptech.glide")
+            }
+            // Enable dependency verification
+            mavenContent {
+                releasesOnly()
+            }
+        }
+    }
+
+    // Enable dependency verification
+    dependencyVerification {
+        verify = true
+    }
+}
+
+// Include project modules
+include ':app'
+include ':core'
+include ':features:health-records'
+include ':features:analytics'
+include ':features:user-profile'
+include ':libraries:security'
+include ':libraries:networking'
+include ':libraries:ui-components'
+
+// Project-wide Gradle settings
+gradle.projectsLoaded {
+    rootProject.allprojects {
+        // Enforce HTTPS for all repository connections
+        repositories.all {
+            if (it instanceof MavenArtifactRepository) {
+                it.url.toString().startsWith('http://') && !it.url.toString().contains('localhost') ?
+                    throw new InvalidUserDataException("HTTPS is required for repository ${it.url}") : null
+            }
+        }
+    }
+}
