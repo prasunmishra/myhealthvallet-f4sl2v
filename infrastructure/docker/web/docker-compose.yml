@@ -1,0 +1,98 @@
+version: '3.8'
+
+services:
+  web:
+    image: phrsat-web
+    build:
+      context: ../../../src/web
+      dockerfile: ./Dockerfile
+      args:
+        - NODE_ENV=production
+        - API_URL=https://api.phrsat.com
+        - REACT_APP_VERSION=${VERSION:-latest}
+        - COMMIT_HASH=${COMMIT_HASH:-unknown}
+        - BUILD_DATE=${BUILD_DATE:-unknown}
+    ports:
+      - "80:80"
+    environment:
+      - NODE_ENV=production
+      - REACT_APP_API_URL=https://api.phrsat.com
+      - REACT_APP_ENVIRONMENT=production
+      - TZ=UTC
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 1G
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "3"
+        compress: "true"
+        tag: "{{.Name}}/{{.ID}}"
+    volumes:
+      - type: bind
+        source: ./nginx.conf
+        target: /etc/nginx/nginx.conf
+        read_only: true
+      - type: volume
+        source: nginx-logs
+        target: /var/log/nginx
+    networks:
+      - web_network
+    security_opt:
+      - no-new-privileges:true
+      - seccomp=unconfined
+    user: nginx
+    read_only: true
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+    labels:
+      - "com.phrsat.description=PHRSAT Web Frontend"
+      - "com.phrsat.environment=production"
+      - "com.phrsat.version=${VERSION:-latest}"
+      - "com.phrsat.maintainer=PHRSAT DevOps Team"
+
+networks:
+  web_network:
+    driver: bridge
+    internal: false
+    enable_ipv6: false
+    attachable: true
+    driver_opts:
+      encrypted: "true"
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.28.0.0/16
+          gateway: 172.28.0.1
+
+volumes:
+  nginx-logs:
+    driver: local
+    driver_opts:
+      type: none
+      device: /var/log/phrsat/nginx
+      o: bind
+
+configs:
+  nginx_config:
+    file: ./nginx.conf
+    template_driver: golang
