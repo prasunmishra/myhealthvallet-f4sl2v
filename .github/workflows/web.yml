@@ -1,0 +1,210 @@
+name: Web CI/CD
+
+on:
+  push:
+    branches: [main, develop]
+    paths: ['src/web/**']
+  pull_request:
+    branches: [main, develop]
+    paths: ['src/web/**']
+
+env:
+  NODE_ENV: production
+  REACT_APP_API_URL: ${{ secrets.API_URL }}
+  SAST_SEVERITY_THRESHOLD: MEDIUM
+  VULNERABILITY_THRESHOLD: HIGH
+  DEPLOYMENT_TIMEOUT: 300
+
+permissions:
+  contents: read
+  packages: write
+  deployments: write
+  id-token: write
+  security-events: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18.x'
+          cache: 'npm'
+          cache-dependency-path: src/web/package-lock.json
+
+      - name: Install dependencies
+        working-directory: src/web
+        run: |
+          npm ci
+          npm audit
+
+      - name: Run ESLint
+        working-directory: src/web
+        run: npm run lint
+
+      - name: Type check
+        working-directory: src/web
+        run: npm run typecheck
+
+      - name: Run tests
+        working-directory: src/web
+        run: |
+          npm run test:coverage -- --ci --coverage-threshold=80
+        env:
+          CI: true
+
+      - name: Upload coverage
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage
+          path: src/web/coverage
+
+  security-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v2
+        with:
+          languages: javascript
+          config-file: ./.github/codeql/codeql-config.yml
+
+      - name: Run CodeQL Analysis
+        uses: github/codeql-action/analyze@v2
+        with:
+          category: "/language:javascript"
+
+      - name: NPM Audit
+        working-directory: src/web
+        run: |
+          npm audit --audit-level=high
+          npm audit fix
+
+      - name: Run Trivy scan
+        uses: aquasecurity/trivy-action@0.10.0
+        with:
+          scan-type: 'fs'
+          scan-ref: 'src/web'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Upload Trivy scan results
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: 'trivy-results.sarif'
+          category: trivy
+
+  build-and-push:
+    needs: [test, security-scan]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: infrastructure/docker/web/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}/web:${{ github.sha }}
+            ghcr.io/${{ github.repository }}/web:${{ github.ref_name }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            NODE_ENV=production
+            API_URL=${{ secrets.API_URL }}
+            BUILD_VERSION=${{ github.ref_name }}
+            COMMIT_HASH=${{ github.sha }}
+          labels: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+
+  deploy:
+    needs: [build-and-push]
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ github.ref == 'refs/heads/main' && 'production' || 'staging' }}
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Update kubeconfig
+        run: |
+          aws eks update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }} --region ${{ secrets.AWS_REGION }}
+
+      - name: Generate deployment ID
+        id: deployment-id
+        run: echo "::set-output name=id::$(date +%s)"
+
+      - name: Deploy new version
+        env:
+          DEPLOYMENT_ID: ${{ steps.deployment-id.outputs.id }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          # Create new deployment with unique ID
+          kubectl create deployment web-$DEPLOYMENT_ID \
+            --image=ghcr.io/${{ github.repository }}/web:$IMAGE_TAG
+
+          # Wait for deployment to be ready
+          kubectl rollout status deployment/web-$DEPLOYMENT_ID --timeout=5m
+
+          # Run health checks
+          kubectl wait --for=condition=ready pod -l app=web-$DEPLOYMENT_ID --timeout=5m
+
+          # Update service to route traffic
+          if kubectl get service web-service; then
+            kubectl patch service web-service --patch \
+              '{"spec":{"selector":{"app":"web-'$DEPLOYMENT_ID'"}}}'
+          else
+            kubectl expose deployment web-$DEPLOYMENT_ID \
+              --name=web-service --port=80 --target-port=80
+          fi
+
+          # Remove old deployment after successful switch
+          kubectl get deployments -l app=web \
+            --no-headers | grep -v $DEPLOYMENT_ID | \
+            awk '{print $1}' | xargs -r kubectl delete deployment
+
+      - name: Verify deployment
+        run: |
+          # Monitor error rates and metrics
+          kubectl logs -l app=web-${{ steps.deployment-id.outputs.id }} --tail=100
+
+          # Generate deployment audit log
+          echo "Deployment ${{ steps.deployment-id.outputs.id }} completed at $(date)" >> deployment.log
+
+      - name: Upload deployment artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: deployment-artifacts
+          path: |
+            deployment.log
+            kubectl-output.log
