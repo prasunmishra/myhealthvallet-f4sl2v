@@ -1,0 +1,39 @@
+File Format: ICO (Windows Icon)
+File Size: < 10KB
+Color Depth: 32-bit (RGBA)
+
+Image Resolutions:
+- 16x16 pixels
+- 24x24 pixels
+- 32x32 pixels
+- 64x64 pixels
+
+Color Specifications:
+- Primary Color: #2196F3 (Material Blue)
+- Background: Transparent
+- Alpha Channel: Supported
+- Dark Mode: Supported via transparency
+
+Design Elements:
+- Clean, minimalist "PHR" lettermark
+- Rounded corners (4px radius)
+- Material Design principles
+- High contrast for accessibility
+
+Technical Properties:
+- PNG compression for each size
+- Alpha channel transparency
+- Optimized for web delivery
+- ICO container format version 2.0
+
+Browser Support:
+- Chrome, Firefox, Safari, Edge (all versions)
+- IE 9+
+- Mobile browsers (full support)
+
+Cache-Control Headers:
+public, max-age=2592000, immutable
+
+Content-Type: image/x-icon
+
+Note: This is a binary file that should be generated using appropriate icon creation tools (e.g., ImageMagick, Sketch, or Adobe Photoshop) following these exact specifications.
