@@ -1,0 +1,200 @@
+name: iOS CI/CD Pipeline
+
+on:
+  push:
+    branches: 
+      - main
+      - 'release/*'
+    paths:
+      - 'src/ios/**'
+  pull_request:
+    branches: 
+      - main
+    paths:
+      - 'src/ios/**'
+  schedule:
+    - cron: '0 0 * * 0'  # Weekly security scans
+
+env:
+  DEVELOPER_DIR: /Applications/Xcode_14.3.app/Contents/Developer
+  WORKSPACE: PHRSATHealthBridge.xcworkspace
+  SCHEME: PHRSATHealthBridge
+  BUNDLE_ID: com.phrsat.healthbridge
+  IOS_DEPLOYMENT_TARGET: '15.0'
+
+jobs:
+  security-scan:
+    name: Security Analysis
+    runs-on: macos-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          
+      - name: Setup Ruby
+        uses: actions/setup-ruby@v1
+        with:
+          ruby-version: '3.0'
+          
+      - name: Install Security Tools
+        run: |
+          brew install swiftlint
+          gem install bundler
+          bundle install
+          
+      - name: Run Security Analysis
+        run: |
+          swiftlint lint --reporter junit > security_report.xml
+          bundle exec fastlane run security_scan
+        
+      - name: Upload Security Reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: security-reports
+          path: |
+            security_report.xml
+            fastlane/test_output/security_scan.json
+
+  test:
+    name: Test
+    needs: security-scan
+    runs-on: macos-latest
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+        
+      - name: Setup Ruby
+        uses: actions/setup-ruby@v1
+        with:
+          ruby-version: '3.0'
+          
+      - name: Cache Dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            vendor/bundle
+            Pods
+          key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
+          
+      - name: Install Dependencies
+        run: |
+          gem install bundler
+          bundle install
+          pod install
+          
+      - name: Setup Temporary Keychain
+        run: |
+          security create-keychain -p "" build.keychain
+          security list-keychains -s build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p "" build.keychain
+          security set-keychain-settings build.keychain
+          
+      - name: Run Tests
+        run: bundle exec fastlane test
+        env:
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+          MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}
+          DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}
+          
+      - name: Upload Test Results
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results
+          path: fastlane/test_output
+          
+  beta:
+    name: Beta Deployment
+    needs: test
+    runs-on: macos-latest
+    if: github.ref == 'refs/heads/main'
+    environment: staging
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+        
+      - name: Setup Ruby
+        uses: actions/setup-ruby@v1
+        with:
+          ruby-version: '3.0'
+          
+      - name: Setup Provisioning Profiles
+        uses: apple-actions/download-provisioning-profiles@v1
+        with:
+          bundle-id: ${{ env.BUNDLE_ID }}
+          profile-type: 'IOS_APP_ADHOC'
+          issuer-id: ${{ secrets.APPSTORE_ISSUER_ID }}
+          api-key-id: ${{ secrets.APPSTORE_KEY_ID }}
+          api-private-key: ${{ secrets.APPSTORE_PRIVATE_KEY }}
+          
+      - name: Install Dependencies
+        run: |
+          gem install bundler
+          bundle install
+          pod install
+          
+      - name: Deploy Beta Build
+        run: bundle exec fastlane beta
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          TEAM_ID: ${{ secrets.TEAM_ID }}
+          ITC_TEAM_ID: ${{ secrets.ITC_TEAM_ID }}
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+          MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}
+          FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}
+          
+  release:
+    name: App Store Release
+    needs: test
+    runs-on: macos-latest
+    if: startsWith(github.ref, 'refs/heads/release/')
+    environment: production
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+        
+      - name: Setup Ruby
+        uses: actions/setup-ruby@v1
+        with:
+          ruby-version: '3.0'
+          
+      - name: Setup Provisioning Profiles
+        uses: apple-actions/download-provisioning-profiles@v1
+        with:
+          bundle-id: ${{ env.BUNDLE_ID }}
+          profile-type: 'IOS_APP_STORE'
+          issuer-id: ${{ secrets.APPSTORE_ISSUER_ID }}
+          api-key-id: ${{ secrets.APPSTORE_KEY_ID }}
+          api-private-key: ${{ secrets.APPSTORE_PRIVATE_KEY }}
+          
+      - name: Install Dependencies
+        run: |
+          gem install bundler
+          bundle install
+          pod install
+          
+      - name: Deploy to App Store
+        run: bundle exec fastlane release
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          TEAM_ID: ${{ secrets.TEAM_ID }}
+          ITC_TEAM_ID: ${{ secrets.ITC_TEAM_ID }}
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+          MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}
+          
+      - name: Clean Up Secrets
+        if: always()
+        run: |
+          security delete-keychain build.keychain
+          rm -rf ~/Library/MobileDevice/Provisioning\ Profiles/
