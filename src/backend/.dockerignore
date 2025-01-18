@@ -1,0 +1,68 @@
+**/__pycache__
+**/*.pyc
+**/*.pyo
+**/*.pyd
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Version control
+.git
+.gitignore
+
+# Environment and secrets
+.env*
+**/*_key.json
+**/*_secret.yaml
+**/*.cert
+
+# Healthcare data processing artifacts
+patient_data_cache/
+temp_analysis/
+**/*.log
+**/*_phi.*
+
+# Machine learning artifacts
+ml_model_cache/
+model_checkpoints/
+training_data/
+feature_cache/
+
+# Development and testing
+tests/
+.idea/
+.vscode/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Build and distribution
+dist/
+build/
+*.egg-info/
+
+# Documentation
+docs/
+*.md
+LICENSE
+
+# Temporary files
+*.swp
+*.swo
+*.tmp
+*.temp
+.DS_Store
+
+# Container orchestration
+docker-compose*.yml
+Dockerfile*
+
+# Dependency management
+poetry.lock
+requirements.txt
+
+# Large binary files
+*.pkl
+*.h5
+*.ckpt
+*.bin
