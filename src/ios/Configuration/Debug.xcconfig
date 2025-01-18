@@ -1,0 +1,52 @@
+// Debug Build Configuration for PHRSAT Health Bridge iOS Application
+// Version: 1.0
+// HIPAA Compliance: Enhanced security settings for development environment
+// Last Updated: 2023
+
+// Include shared build settings
+#include "./Shared.xcconfig"
+
+// Debug Information and Optimization Settings
+DEBUG_INFORMATION_FORMAT = dwarf // Debug symbols in DWARF format for development
+GCC_OPTIMIZATION_LEVEL = 0 // No optimization for faster builds
+SWIFT_OPTIMIZATION_LEVEL = -Onone // No Swift optimization for debugging
+ONLY_ACTIVE_ARCH = YES // Build only active architecture for faster builds
+COPY_PHASE_STRIP = NO // Do not strip debug symbols
+
+// Debug Compilation Conditions
+SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG SECURE_DEBUG HIPAA_COMPLIANT // Enable debug-specific code paths
+GCC_PREPROCESSOR_DEFINITIONS = DEBUG=1 SECURE_DEBUG=1 HIPAA_COMPLIANT=1 $(inherited) // C preprocessor definitions
+
+// Debug Assertions and Testing
+ENABLE_TESTABILITY = YES // Enable testing support
+ENABLE_NS_ASSERTIONS = YES // Enable runtime assertions
+MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE // Include Metal shader source for debugging
+
+// Enhanced Security Debug Settings
+ENABLE_SECURE_DEBUG_LOGGING = YES // Enable secure debug logging with PHI protection
+DEBUG_ACTIVITY_MODE = AUDIT_ENABLED // Enable debug activity auditing
+SECURE_CRASH_REPORTING = YES // Enable secure crash reporting with PHI protection
+
+// Additional Debug-specific Settings
+GCC_DYNAMIC_NO_PIC = NO // Generate position-independent code
+ENABLE_STRICT_OBJC_MSGSEND = YES // Strict Objective-C message sending
+ENABLE_PREVIEWS = YES // Enable SwiftUI previews for development
+
+// Debug Sanitizer Settings
+CLANG_ADDRESS_SANITIZER_ALLOW_ERROR_RECOVERY = YES // Allow sanitizer error recovery
+CLANG_UNDEFINED_BEHAVIOR_SANITIZER_INTEGER = YES // Enable integer sanitizer
+CLANG_UNDEFINED_BEHAVIOR_SANITIZER_NULLABILITY = YES // Enable nullability sanitizer
+
+// Development-specific Security Settings
+CODE_SIGNING_ALLOWED = YES // Allow code signing in debug
+VALIDATE_WORKSPACE = YES // Validate workspace integrity
+ENABLE_USER_SCRIPT_SANDBOXING = YES // Enable script sandboxing
+
+// Debug Memory Management
+SWIFT_ENFORCE_EXCLUSIVE_ACCESS = on // Strict memory access
+CLANG_STATIC_ANALYZER_MODE = deep // Deep static analysis
+CLANG_STATIC_ANALYZER_MODE_ON_ANALYZE_ACTION = deep // Deep analysis on build
+
+// Development Team and Provisioning
+PROVISIONING_PROFILE_SPECIFIER = // Development provisioning profile
+CODE_SIGN_STYLE = Automatic // Automatic code signing for development
