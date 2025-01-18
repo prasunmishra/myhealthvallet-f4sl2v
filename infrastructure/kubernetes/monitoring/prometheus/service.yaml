@@ -1,0 +1,49 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus
+  namespace: phrsat
+  labels:
+    app: prometheus
+    component: monitoring
+    tier: infrastructure
+    managed-by: kubernetes
+  annotations:
+    # Service description and ownership
+    description: "Prometheus monitoring service for PHRSAT platform"
+    maintainer: "PHRSAT Platform Team"
+    
+    # Monitoring configuration
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9090"
+    
+    # Security annotations
+    security.kubernetes.io/network-policy: "enabled"
+    security.kubernetes.io/internal-only: "true"
+    
+    # Service stability configuration
+    service.kubernetes.io/topology-aware-hints: "auto"
+    service.beta.kubernetes.io/aws-load-balancer-internal: "true"
+
+spec:
+  type: ClusterIP  # Internal-only access as per security context
+  ports:
+    - name: http-metrics
+      port: 9090  # Standard Prometheus port
+      targetPort: 9090
+      protocol: TCP
+  
+  # Selector matching Prometheus deployment pods
+  selector:
+    app: prometheus
+    component: monitoring
+  
+  # Service quality settings
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800  # 3 hour session stickiness
+  
+  # Publishing settings
+  publishNotReadyAddresses: false
+  internalTrafficPolicy: Cluster
