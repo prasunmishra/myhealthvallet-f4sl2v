@@ -1,0 +1,153 @@
+name: Android CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - 'release/*'
+    paths:
+      - 'src/android/**'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'src/android/**'
+
+env:
+  JAVA_VERSION: '17'
+  JAVA_DISTRIBUTION: 'temurin'
+  SECURITY_SCAN_LEVEL: 'high'
+  PERFORMANCE_THRESHOLD: 'p90'
+
+jobs:
+  security-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          lfs: true
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v2
+        with:
+          languages: java
+          queries: security-extended
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v2
+        with:
+          category: "/language:java"
+
+  build:
+    needs: security-scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          lfs: true
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          cache: 'gradle'
+
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v2
+        with:
+          gradle-version: wrapper
+          cache-read-only: false
+          cache-write-only: ${{ github.ref == 'refs/heads/main' }}
+          arguments: --build-cache --parallel
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x src/android/gradlew
+
+      - name: Run unit tests
+        run: |
+          cd src/android
+          ./gradlew test --parallel
+          
+      - name: Run instrumentation tests
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 29
+          script: cd src/android && ./gradlew connectedAndroidTest
+
+      - name: Build debug APK
+        run: |
+          cd src/android
+          ./gradlew assembleDebug --stacktrace
+
+      - name: Build release APK
+        if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/release/')
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          cd src/android
+          ./gradlew assembleRelease --stacktrace
+
+      - name: Sign APK
+        if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/release/')
+        uses: r0adkll/sign-android-release@v1
+        with:
+          releaseDirectory: src/android/app/build/outputs/apk/release
+          signingKeyBase64: ${{ secrets.SIGNING_KEY }}
+          alias: ${{ secrets.KEY_ALIAS }}
+          keyStorePassword: ${{ secrets.KEYSTORE_PASSWORD }}
+          keyPassword: ${{ secrets.KEY_PASSWORD }}
+
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v3
+        with:
+          name: debug-apk
+          path: src/android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload release APK
+        if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/release/')
+        uses: actions/upload-artifact@v3
+        with:
+          name: release-apk
+          path: src/android/app/build/outputs/apk/release/app-release.apk
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Generate security report
+        run: |
+          cd src/android
+          ./gradlew dependencyCheckAnalyze
+
+      - name: Upload security report
+        uses: actions/upload-artifact@v3
+        with:
+          name: security-report
+          path: src/android/build/reports/dependency-check-report.html
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Collect performance metrics
+        run: |
+          cd src/android
+          ./gradlew :app:measurePerformance
+
+      - name: Performance check
+        if: github.event_name == 'pull_request'
+        run: |
+          cd src/android
+          ./gradlew :app:verifyPerformanceMetrics \
+            -Pthreshold=${{ env.PERFORMANCE_THRESHOLD }}
+
+      - name: Cleanup Gradle Cache
+        if: always()
+        run: |
+          rm -rf ~/.gradle/caches/modules-2/modules-2.lock
+          rm -rf ~/.gradle/caches/*/plugin-resolution/
