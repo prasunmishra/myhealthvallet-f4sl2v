@@ -1,0 +1,117 @@
+# Gradle files
+.gradle/
+build/
+*/build/
+
+# Local configuration
+local.properties
+
+# PHRSAT specific
+phrsat.properties
+health_api.properties
+health_cache/
+temp_uploads/
+
+# IDE files
+.idea/
+*.iml
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/gradle.xml
+.idea/dictionaries
+.idea/libraries/
+.idea/caches/
+
+# Android Studio captures
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Security files
+*.jks
+*.keystore
+keystore.properties
+signing.properties
+
+# Google Services
+google-services.json
+
+# Generated files
+bin/
+gen/
+out/
+
+# Container artifacts
+.docker/
+*.env
+
+# Gradle wrapper
+gradle-wrapper.properties
+
+# Proguard
+proguard/
+*.pro
+
+# Log Files
+*.log
+crash/
+logs/
+
+# Android Studio Navigation editor
+.navigation/
+
+# Android Studio profiler
+*.hprof
+*.trace
+
+# OS-specific files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# NDK
+obj/
+.externalNativeBuild
+.cxx
+
+# Version control
+.svn/
+.git/
+
+# Fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots
+fastlane/test_output
+fastlane/readme.md
+
+# Code coverage
+jacoco.exec
+coverage/
+
+# Backup files
+*~
+*.bak
+
+# Firebase
+google-services.json
+firebase_credentials.json
+
+# Kotlin
+*.kotlin_module
+*.kotlin_metadata
+*.kotlin_builtins
+
+# Release files
+app/release/
+app/debug/
+app/staging/
+
+# PHRSAT encryption keys
+*.key
+*.pem
+encryption.properties
