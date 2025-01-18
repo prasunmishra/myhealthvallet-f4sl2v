@@ -1,0 +1,44 @@
+# fastlane-plugin-match 2.210.0
+
+# Git URL for storing certificates and profiles securely
+# Retrieved from environment variable for security
+git_url("${MATCH_GIT_URL}")
+
+# Use git as the storage mode for certificates and profiles
+storage_mode("git")
+
+# Set to development certificates (can be overridden in command line for app store builds)
+type("development")
+
+# Enable readonly mode to prevent unauthorized modifications to certificates
+readonly(true)
+
+# Automatically generate Apple certificates if missing
+generate_apple_certs(true)
+
+# Specify iOS platform
+platform("ios")
+
+# Bundle identifiers for main app and extensions
+app_identifier([
+  "com.phrsat.healthbridge",
+  "com.phrsat.healthbridge.extension"
+])
+
+# Automatically refresh profiles when new devices are added to the team
+force_for_new_devices(true)
+
+# Template name for provisioning profiles
+template_name("PHRSATHealthBridge")
+
+# Additional security settings
+shallow_clone(true)
+skip_docs(true)
+verbose(false)
+
+# Set git branch for different environments
+git_branch("main")
+
+# Encryption settings for the git repository
+storage_mode("git")
+git_basic_authorization(ENV["MATCH_GIT_BASIC_AUTHORIZATION"])
