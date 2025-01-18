@@ -1,0 +1,62 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: phrsat-psp-restricted
+  labels:
+    app.kubernetes.io/name: phrsat-rbac
+    app.kubernetes.io/part-of: phrsat-platform
+    app.kubernetes.io/component: security
+    hipaa.compliance/enabled: "true"
+    security.phrsat.io/audit: "enabled"
+  annotations:
+    rbac.authorization.kubernetes.io/autoupdate: "true"
+    hipaa.compliance/last-review: "2023-10-01"
+    security.phrsat.io/audit-level: "strict"
+rules:
+# Allow use of the pod security policy
+- apiGroups: ["policy"]
+  resources: ["podsecuritypolicies"]
+  verbs: ["use"]
+  resourceNames: ["phrsat-restricted"]
+
+# Allow limited secret access
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get", "list"]
+  resourceNames: ["phrsat-*"]
+
+# Allow audit sink creation for HIPAA compliance
+- apiGroups: ["audit.k8s.io"]
+  resources: ["auditsinks"]
+  verbs: ["create"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: phrsat-psp-restricted
+  labels:
+    app.kubernetes.io/name: phrsat-rbac
+    app.kubernetes.io/part-of: phrsat-platform
+    app.kubernetes.io/component: security
+    hipaa.compliance/enabled: "true"
+  annotations:
+    rbac.authorization.kubernetes.io/autoupdate: "true"
+    security.phrsat.io/last-reviewed: "2023-10-01"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: phrsat-psp-restricted
+subjects:
+# Bind to default service account
+- kind: ServiceAccount
+  name: default
+  namespace: phrsat
+# Bind to analytics service account
+- kind: ServiceAccount
+  name: phrsat-analytics
+  namespace: phrsat
+# Bind to API service account  
+- kind: ServiceAccount
+  name: phrsat-api
+  namespace: phrsat
