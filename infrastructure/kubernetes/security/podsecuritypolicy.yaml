@@ -1,0 +1,85 @@
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: phrsat-restricted
+  labels:
+    app.kubernetes.io/name: phrsat-psp
+    app.kubernetes.io/part-of: phrsat-platform
+    app.kubernetes.io/component: security
+    security.phrsat.io/hipaa-compliant: "true"
+    security.phrsat.io/audit-enabled: "true"
+  annotations:
+    seccomp.security.alpha.kubernetes.io/allowedProfileNames: "runtime/default"
+    apparmor.security.beta.kubernetes.io/allowedProfileNames: "runtime/default"
+    seccomp.security.alpha.kubernetes.io/defaultProfileName: "runtime/default"
+    apparmor.security.beta.kubernetes.io/defaultProfileName: "runtime/default"
+    security.phrsat.io/last-reviewed: "2023-08-01"
+    security.phrsat.io/compliance-status: "hipaa-compliant"
+    kubernetes.io/description: "Restricted PSP enforcing HIPAA-compliant security controls for PHRSAT platform"
+    security.phrsat.io/audit-policy: "all-operations"
+
+spec:
+  # Prevent privileged containers and privilege escalation
+  privileged: false
+  allowPrivilegeEscalation: false
+  
+  # Drop all capabilities by default
+  requiredDropCapabilities:
+    - "ALL"
+  
+  # Only allow necessary volume types
+  volumes:
+    - "configMap"
+    - "emptyDir"
+    - "projected"
+    - "secret"
+    - "downwardAPI"
+    - "persistentVolumeClaim"
+  
+  # Prevent host namespace sharing
+  hostNetwork: false
+  hostIPC: false
+  hostPID: false
+  
+  # Enforce non-root user execution
+  runAsUser:
+    rule: "MustRunAsNonRoot"
+    ranges:
+    - min: 1000
+      max: 65535
+  
+  # SELinux configuration
+  seLinux:
+    rule: "RunAsAny"
+  
+  # Supplemental groups configuration
+  supplementalGroups:
+    rule: "MustRunAs"
+    ranges:
+    - min: 1000
+      max: 65535
+  
+  # Filesystem group configuration
+  fsGroup:
+    rule: "MustRunAs"
+    ranges:
+    - min: 1000
+      max: 65535
+  
+  # Enforce read-only root filesystem
+  readOnlyRootFilesystem: true
+  
+  # Sysctls restrictions
+  forbiddenSysctls:
+    - "*"
+  
+  # Host paths restrictions
+  allowedHostPaths: []
+  
+  # Seccomp profile restrictions
+  seccompProfiles:
+    - "runtime/default"
+  
+  # AppArmor profile restrictions
+  annotations:
+    apparmor.security.beta.kubernetes.io/defaultProfileName: "runtime/default"
