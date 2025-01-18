@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+    <!-- Application Information -->
+    <string name="app_name">PHRSAT</string>
+    <string name="app_description">Personal Health Record Store and Analysis Tool</string>
+
+    <!-- Biometric Authentication -->
+    <string name="biometric_prompt_title">Secure Access Required</string>
+    <string name="biometric_prompt_subtitle">Please authenticate to access your protected health information</string>
+    <string name="biometric_prompt_negative">Cancel and Sign Out</string>
+
+    <!-- Permission Rationales -->
+    <string name="permission_camera_rationale">Camera access is required to scan and digitize your health documents. This helps maintain your digital health record collection.</string>
+    <string name="permission_storage_rationale">Storage access is needed to securely save your health records and documents on your device.</string>
+    <string name="permission_activity_recognition_rationale">Activity tracking helps provide comprehensive health insights by monitoring your daily activities and exercise patterns.</string>
+
+    <!-- Health Platform Integration -->
+    <string name="google_fit_permission_title">Health Data Integration</string>
+    <string name="google_fit_permission_message">Connect to Google Fit to enhance your health tracking with activity data, exercise metrics, and vital signs.</string>
+
+    <!-- Error Messages -->
+    <string name="error_biometric_not_available">Biometric authentication is not available on this device. Please use alternative security methods.</string>
+    <string name="error_biometric_not_enrolled">Biometric authentication is not set up. Please configure it in your device settings for enhanced security.</string>
+    <string name="error_google_fit_not_available">Unable to connect to Google Fit. Please ensure it\'s installed and properly configured.</string>
+    <string name="error_network_unavailable">Network connection unavailable. Some features may be limited.</string>
+    <string name="error_server_connection">Unable to connect to health services. Please try again later.</string>
+
+    <!-- Sync Status Messages -->
+    <string name="success_health_data_sync">Your health data has been successfully synchronized and updated.</string>
+    <string name="error_health_data_sync">Unable to synchronize health data. Please check your connection and try again.</string>
+    <string name="sync_in_progress">Synchronizing your health data...</string>
+</resources>
