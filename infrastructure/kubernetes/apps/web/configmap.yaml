@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: phrsat-web-config
+  namespace: phrsat
+  labels:
+    app.kubernetes.io/name: phrsat-web
+    app.kubernetes.io/part-of: phrsat-platform
+    app.kubernetes.io/component: frontend
+  annotations:
+    kubernetes.io/change-cause: "Initial production configuration"
+    phrsat.com/config-version: "v1.0.0"
+    phrsat.com/last-updated: "2023-10-20"
+    security.phrsat.com/reviewed-by: "security-team"
+    security.phrsat.com/last-review: "2023-10-20"
+
+data:
+  # Environment and API Configuration
+  NODE_ENV: "production"
+  REACT_APP_API_BASE_URL: "https://api.phrsat.com"
+  REACT_APP_API_VERSION: "v1"
+  REACT_APP_API_TIMEOUT: "30000"
+  REACT_APP_API_RETRY_ATTEMPTS: "3"
+  REACT_APP_API_RETRY_DELAY: "1000"
+
+  # Feature Flags
+  REACT_APP_ENABLE_ANALYTICS: "true"
+  REACT_APP_ENABLE_HEALTH_PLATFORMS: "true"
+  REACT_APP_ENABLE_DOCUMENT_OCR: "true"
+  REACT_APP_ENABLE_BIOMETRIC_AUTH: "true"
+  REACT_APP_ENABLE_ERROR_REPORTING: "true"
+  REACT_APP_ENABLE_PERFORMANCE_MONITORING: "true"
+  REACT_APP_ENABLE_CRASH_REPORTING: "true"
+
+  # Localization Settings
+  REACT_APP_DEFAULT_LANGUAGE: "en"
+  REACT_APP_SUPPORTED_LANGUAGES: "en,es,fr"
+
+  # Upload Configuration
+  REACT_APP_MAX_UPLOAD_SIZE: "10485760"
+  REACT_APP_MAX_CONCURRENT_UPLOADS: "3"
+
+  # Security Settings
+  REACT_APP_RATE_LIMIT_MAX_REQUESTS: "1000"
+  REACT_APP_RATE_LIMIT_WINDOW_MS: "3600000"
+  REACT_APP_SESSION_TIMEOUT: "3600000"
+  REACT_APP_IDLE_TIMEOUT: "900000"
